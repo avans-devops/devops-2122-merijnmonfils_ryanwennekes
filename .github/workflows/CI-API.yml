@@ -20,3 +20,5 @@ jobs:
         with:
           working-directory: ./api
           test-script: npx jest --forceExit
+      - name: Run ESLint
+        run: npx eslint .
