@@ -8,11 +8,11 @@ defaults:
     working-directory: ./api
 
 jobs:
-  name: Test Code Coverage
-  runs-on: ubuntu-latest
-  steps:
-    - name: Run Tests
-    - uses: actions/checkout@v1
-    - uses: ArtiomTr/jest-coverage-report-action@v2
-      with:
-        working-directory: ./api
+  code_coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Tests
+      - uses: actions/checkout@v1
+      - uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          working-directory: ./api
