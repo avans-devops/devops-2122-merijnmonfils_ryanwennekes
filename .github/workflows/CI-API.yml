@@ -23,5 +23,7 @@ jobs:
   es_lint:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
       - name: run ESLint
         run: eslint .
