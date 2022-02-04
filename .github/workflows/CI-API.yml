@@ -6,6 +6,16 @@ on:
   pull_request:
     branches:
       - main
+defaults:
+  run:
+    working-directory: ./api
 jobs:
-  call-workflow-code-coverage:
-    uses: avans-devops/devops-2122-merijnmonfils_ryanwennekes/.github/workflows/Code-Coverage.yml@main
+  code_coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - uses: ArtiomTr/jest-coverage-report-action@v2
+        name: Run tests
+        with:
+          working-directory: ./api
