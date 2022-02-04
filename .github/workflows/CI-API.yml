@@ -26,4 +26,4 @@ jobs:
       - uses: actions/checkout@v1
         name: Check out repository
       - name: run ESLint
-        run: eslint .
+        run: npx eslint .
