@@ -8,4 +8,4 @@ on:
       - main
 jobs:
   call-workflow-code-coverage:
-    uses: ./.github/workflows/Code-Coverage.yml
+    uses: avans-devops/devops-2122-merijnmonfils_ryanwennekes/.github/workflows/Code-Coverage.yml@main
