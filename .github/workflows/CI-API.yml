@@ -1,0 +1,12 @@
+name: Continuous Integration
+on:
+  push:
+    branches:
+      - 'api/**'
+  pullrequest:
+    branches:
+      - main
+
+jobs:
+  call-workflow-code-coverage:
+    uses: avans-devops/devops-2122-merijnmonfils_ryanwennekes/.github/jobs/Code-Coverage.yml
