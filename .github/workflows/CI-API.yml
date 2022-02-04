@@ -19,3 +19,4 @@ jobs:
         name: Run tests
         with:
           working-directory: ./api
+          test-script: npm test

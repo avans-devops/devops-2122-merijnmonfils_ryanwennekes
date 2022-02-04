@@ -6,7 +6,7 @@
     "dev": "nodemon -r dotenv/config ./bin/www",
     "lint": "npx eslint .",
     "start": "node ./bin/www",
-    "test": "jest"
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
