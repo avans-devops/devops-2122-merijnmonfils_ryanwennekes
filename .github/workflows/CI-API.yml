@@ -9,4 +9,4 @@ on:
 
 jobs:
   call-workflow-code-coverage:
-    uses: avans-devops/devops-2122-merijnmonfils_ryanwennekes/.github/jobs/Code-Coverage.yml
+    uses: ./.github/workflows/Code-Coverage.yml
