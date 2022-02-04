@@ -6,7 +6,6 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
   call-workflow-code-coverage:
     uses: ./.github/workflows/Code-Coverage.yml

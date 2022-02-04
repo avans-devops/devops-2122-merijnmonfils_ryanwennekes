@@ -1,12 +1,9 @@
 name: Test Code Coverage
-
 on:
   workflow_call:
-
 defaults:
   run:
     working-directory: ./api
-
 jobs:
   code_coverage:
     runs-on: ubuntu-latest
