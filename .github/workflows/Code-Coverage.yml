@@ -11,8 +11,9 @@ jobs:
   code_coverage:
     runs-on: ubuntu-latest
     steps:
-      - name: Run Tests
       - uses: actions/checkout@v1
+        name: Check out repository
       - uses: ArtiomTr/jest-coverage-report-action@v2
+        name: Run tests
         with:
           working-directory: ./api
