@@ -1,0 +1,29 @@
+name: Continuous Integration
+on:
+  push:
+    branches:
+      - 'api/**'
+  pull_request:
+    branches:
+      - main
+defaults:
+  run:
+    working-directory: ./api
+jobs:
+  code_coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - uses: ArtiomTr/jest-coverage-report-action@v2
+        name: Run tests
+        with:
+          working-directory: ./api
+          test-script: npx jest --forceExit
+  es_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - name: run ESLint
+        run: npx eslint .
