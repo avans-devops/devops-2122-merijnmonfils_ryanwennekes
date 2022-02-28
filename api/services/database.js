@@ -1,6 +1,12 @@
 const { MongoClient } = require('mongodb');
 
-const client = new MongoClient(process.env.MONGO_URL, {
+const host = process.env.DB_HOST_NAME
+const port = process.env.DB_PORT
+
+console.log(`Database host name: ${host}`)
+console.log(`Database port: ${port}`)
+
+const client = new MongoClient(`mongodb://${host}:${port}`, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -19,7 +25,7 @@ module.exports = {
           }
 
           if (db) {
-            dbConnection = db.db(process.env.DB_NAME || 'DevOps');
+            dbConnection = db.db(process.env.DB_NAME);
             console.log('Successfully connected to MongoDB.');
             resolve(dbConnection);
           } else {
