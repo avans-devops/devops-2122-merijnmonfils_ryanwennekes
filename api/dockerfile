@@ -1,15 +1,13 @@
 FROM node:14
 
-WORKDIR /app
+WORKDIR /api
 
-COPY . /app
+COPY . /api
 
 RUN npm install
 
-EXPOSE 3000
-
-ENV DB_PORT=27017
-ENV DB_HOST_NAME=mongo
-ENV DB_NAME=DevOps
+ENV DB_PORT={DB_PORT}
+ENV DB_HOST_NAME={DB_HOST_NAME}
+ENV DB_NAME={DB_NAME}
 
 CMD ["npm", "start"]
