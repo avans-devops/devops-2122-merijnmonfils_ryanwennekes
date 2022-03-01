@@ -1,13 +1,27 @@
 FROM node:14
 
+ARG DB_PORT
+ARG DB_HOST_NAME
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASSWORD
+
+RUN echo "Database port set to $DB_PORT."
+RUN echo "Database host name set to $DB_HOST_NAME."
+RUN echo "Database name set to $DB_NAME."
+RUN echo "Database username set to $DB_USER."
+RUN echo "Database password set to $DB_PASSWORD."
+
+ENV DB_PORT $DB_PORT
+ENV DB_HOST_NAME $DB_HOST_NAME
+ENV DB_NAME $DB_NAME
+ENV DB_USER $DB_USER
+ENV DB_PASSWORD $DB_PASSWORD
+
 WORKDIR /api
 
 COPY . /api
 
 RUN npm install
-
-ENV DB_PORT={DB_PORT}
-ENV DB_HOST_NAME={DB_HOST_NAME}
-ENV DB_NAME={DB_NAME}
 
 CMD ["npm", "start"]

@@ -1,12 +1,14 @@
 const { MongoClient } = require('mongodb');
 
+const user = process.env.DB_USER
+const password = process.env.DB_PASSWORD
 const host = process.env.DB_HOST_NAME
 const port = process.env.DB_PORT
 
 console.log(`Database host name: ${host}`)
 console.log(`Database port: ${port}`)
 
-const client = new MongoClient(`mongodb://${host}:${port}`, {
+const client = new MongoClient(`mongodb://${user}:${password}@${host}:${port}`, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
