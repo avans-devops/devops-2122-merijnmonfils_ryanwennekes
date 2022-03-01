@@ -6,6 +6,7 @@ services:
       context: ./api
       dockerfile: dockerfile
       args:
+        API_PORT: 3000
         DB_PORT: 27017
         DB_HOST_NAME: "mongo"
         DB_NAME: "DevOps"
@@ -20,8 +21,8 @@ services:
       - external
     restart: always
     depends_on:
-      - db
-  db:
+      - mongo
+  mongo:
     image: mongo:latest
     environment:
       - MONGO_INITDB_ROOT_USERNAME=username
@@ -33,7 +34,7 @@ services:
       - internal
     restart: always
     volumes:
-      - data_volume:/var/lib/data
+      - data_volume:/data/db
 volumes:
   data_volume:
 
