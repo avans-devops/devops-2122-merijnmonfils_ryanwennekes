@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: dockerfile
+      args:
+        API_PORT: 3000
+        DB_PORT: 27017
+        DB_HOST_NAME: "mongo"
+        DB_NAME: "DevOps"
+        DB_USER: "username"
+        DB_PASSWORD: "password"
+    volumes:
+      - ./api:/api
+    ports:
+      - "3000:3000"
+    networks:
+      - internal
+      - external
+    restart: always
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=username
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=DevOps
+    ports:
+      - "27017:27017"
+    networks:
+      - internal
+    restart: always
+    volumes:
+      - data_volume:/data/db
+volumes:
+  data_volume:
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: overlay

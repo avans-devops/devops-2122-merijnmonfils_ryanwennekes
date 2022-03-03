@@ -1,6 +1,23 @@
 const { MongoClient } = require('mongodb');
 
-const client = new MongoClient(process.env.MONGO_URL, {
+const user = process.env.DB_USER;
+const password = process.env.DB_PASSWORD;
+const host = process.env.DB_HOST_NAME;
+const port = process.env.DB_PORT;
+const name = process.env.DB_NAME;
+
+var clientConnectionString = '';
+var databaseName = '';
+
+if (process.env.JEST) {
+  clientConnectionString = global.__MONGO_URI__;
+  databaseName = global.__MONGO_DB_NAME__;
+} else {
+  clientConnectionString = `mongodb://${user}:${password}@${host}:${port}`;
+  databaseName = name;
+}
+
+const client = new MongoClient(clientConnectionString, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -19,7 +36,7 @@ module.exports = {
           }
 
           if (db) {
-            dbConnection = db.db(process.env.DB_NAME || 'DevOps');
+            dbConnection = db.db(databaseName);
             console.log('Successfully connected to MongoDB.');
             resolve(dbConnection);
           } else {

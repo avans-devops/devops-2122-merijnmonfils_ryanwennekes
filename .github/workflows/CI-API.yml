@@ -19,7 +19,7 @@ jobs:
         name: Run tests
         with:
           working-directory: ./api
-          test-script: npx jest --forceExit
+          test-script: npm test
   es_lint:
     runs-on: ubuntu-latest
     steps:
