@@ -4,11 +4,22 @@ const user = process.env.DB_USER
 const password = process.env.DB_PASSWORD
 const host = process.env.DB_HOST_NAME
 const port = process.env.DB_PORT
+const name = process.env.DB_NAME
 
-console.log(`Database host name: ${host}`)
-console.log(`Database port: ${port}`)
+var clientConnectionString = ""
+var databaseName = ""
 
-const client = new MongoClient(`mongodb://${user}:${password}@${host}:${port}`, {
+if (process.env.JEST) {
+  clientConnectionString = global.__MONGO_URI__
+  databaseName = global.__MONGO_DB_NAME__
+} else {
+  clientConnectionString = `mongodb://${user}:${password}@${host}:${port}`
+  databaseName = name
+}
+
+console.log(clientConnectionString)
+
+const client = new MongoClient(clientConnectionString, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -27,7 +38,7 @@ module.exports = {
           }
 
           if (db) {
-            dbConnection = db.db(process.env.DB_NAME);
+            dbConnection = db.db(databaseName);
             console.log('Successfully connected to MongoDB.');
             resolve(dbConnection);
           } else {
