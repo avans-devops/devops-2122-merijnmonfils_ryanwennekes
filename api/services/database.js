@@ -15,7 +15,7 @@ if (process.env.JEST) {
 } else {
   clientConnectionString = `mongodb://${user}:${password}@${host}:${port}`;
   databaseName = name;
-};
+}
 
 const client = new MongoClient(clientConnectionString, {
   useNewUrlParser: true,
