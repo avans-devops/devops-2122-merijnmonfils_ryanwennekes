@@ -2,7 +2,7 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - 'api/**'
+      - 'feature-**'
   pull_request:
     branches:
       - main

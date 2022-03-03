@@ -1,0 +1,21 @@
+name: Open Pull Request to Main Branch
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  generate_okteto_preview:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Context
+        uses: okteto/context@latest
+        with:
+          token: ${{ secrets.OKTETO_TOKEN }}
+
+      - name: Deploy preview environment
+        uses: okteto/deploy-preview@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.OKTETO_GITHUB_TOKEN }}
+        with:
+          name: pr-${{ github.event.number }}-ryanwennekes
+          timeout: 15m
