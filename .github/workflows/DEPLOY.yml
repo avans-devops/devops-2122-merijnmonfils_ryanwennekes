@@ -22,5 +22,5 @@ jobs:
     - name: "Trigger the pipeline"
       uses: okteto/pipeline@latest
       with:
-        name: latestDeployment
+        name: latestdeployment
         timeout: 8m
