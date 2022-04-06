@@ -14,8 +14,7 @@ const metricsMiddleware = promBundle({
   }
 });
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var targetsRoute = require('./routes/targets');
 
 var app = express();
 require('./services/database').getDb();
@@ -32,8 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(metricsMiddleware);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/targets', targetsRoute);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
