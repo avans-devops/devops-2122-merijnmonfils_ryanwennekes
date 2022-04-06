@@ -5,31 +5,80 @@ services:
     build:
       context: ./apigateway
       dockerfile: dockerfile
-      args:
-        API_PORT: 3000
-        DB_PORT: 27017
-        DB_HOST_NAME: mongo
-        DB_NAME: DevOps
-        DB_USER: username
-        DB_PASSWORD: password
     volumes:
       - ./apigateway:/apigateway
     ports:
       - 3000:3000
     restart: always
+  hostingservice:
+    build:
+      context: ./hostingservice
+      dockerfile: dockerfile
+      args:
+        PORT: 3001
+        DB_PORT: 27017
+        DB_HOST_NAME: mongo
+        DB_NAME: hosting
+        DB_USER: username
+        DB_PASSWORD: password
+    volumes:
+      - ./hostingservice:/hostingservice
+    ports:
+      - 3001:3001
+    restart: always
     depends_on:
-      - mongo
-  mongo:
+      - hostingdb
+  participationservice:
+    build:
+      context: ./participationservice
+      dockerfile: dockerfile
+      args:
+        PORT: 3002
+        DB_PORT: 27018
+        DB_HOST_NAME: mongo
+        DB_NAME: hosting
+        DB_USER: username
+        DB_PASSWORD: password
+    volumes:
+      - ./participationservice:/participationservice
+    ports:
+      - 3002:3002
+    restart: always
+    depends_on:
+      - participationdb
+  scoringservice:
+    build:
+      context: ./scoringservice
+      dockerfile: dockerfile
+      args:
+        PORT: 3003
+    volumes:
+      - ./scoringservice:/scoringservice
+    ports:
+      - 3003:3003
+    restart: always
+  hostingdb:
     image: mongo:latest
     environment:
       - MONGO_INITDB_ROOT_USERNAME=username
       - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=DevOps
+      - MONGO_INITDB_DATABASE=hosting
     ports:
       - 27017:27017
     restart: always
     volumes:
-      - data_volume:/data/db
+      - hostingdb_volume:/data/hosting
+  participationdb:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=username
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=participation
+    ports:
+      - 27018:27018
+    restart: always
+    volumes:
+      - participationdb_volume:/data/participation
   # db-exporter:
   #   image: bitnami/mongodb-exporter:latest
   #   command: --mongodb.uri=mongodb://username:password@mongo:27017
@@ -55,5 +104,6 @@ services:
   #   depends_on:
   #     - prometheus
 volumes:
-  data_volume:
+  hostingdb_volume:
+  participationdb_volume:
   # prometheus-data:
