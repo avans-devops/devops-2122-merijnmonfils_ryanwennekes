@@ -24,7 +24,7 @@ var targetSchema = new mongoose.Schema({
   thumbsUp: {type: Number, default: 0},
   thumbsDown: {type: Number, default: 0},
   submissions: [{
-    type: Schema.type.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Submission"
   }]
 })

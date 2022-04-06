@@ -11,7 +11,7 @@ var submissionSchema = new mongoose.Schema({
     required: true
   },
   target: {
-    type: Schema.type.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Target"
   }
 })
