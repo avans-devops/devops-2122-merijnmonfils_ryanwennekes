@@ -19,9 +19,9 @@ ENV DB_NAME $DB_NAME
 ENV DB_USER $DB_USER
 ENV DB_PASSWORD $DB_PASSWORD
 
-WORKDIR /api
+WORKDIR /apigateway
 
-COPY . /api
+COPY package.json /apigateway
 
 RUN npm install
 

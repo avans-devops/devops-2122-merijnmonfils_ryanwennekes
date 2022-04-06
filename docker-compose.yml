@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  api:
+  apigateway:
     build:
-      context: ./api
+      context: ./apigateway
       dockerfile: dockerfile
       args:
         API_PORT: 3000
@@ -13,7 +13,7 @@ services:
         DB_USER: username
         DB_PASSWORD: password
     volumes:
-      - ./api:/api
+      - ./apigateway:/apigateway
     ports:
       - 3000:3000
     restart: always
@@ -30,30 +30,30 @@ services:
     restart: always
     volumes:
       - data_volume:/data/db
-  db-exporter:
-    image: bitnami/mongodb-exporter:latest
-    command: --mongodb.uri=mongodb://username:password@mongo:27017
-    depends_on:
-      - mongo
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prometheus-data:/prometheus
-    ports:
-      - 9090:9090
-    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
-    depends_on:
-      - db-exporter
-      - api
-  grafana:
-    build: ./grafana
-    ports:
-      - 3001:3001
-    environment:
-      - GF_SERVER_HTTP_PORT=3001
-    depends_on:
-      - prometheus
+  # db-exporter:
+  #   image: bitnami/mongodb-exporter:latest
+  #   command: --mongodb.uri=mongodb://username:password@mongo:27017
+  #   depends_on:
+  #     - mongo
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     - prometheus-data:/prometheus
+  #   ports:
+  #     - 9090:9090
+  #   command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
+  #   depends_on:
+  #     - db-exporter
+  #     - api
+  # grafana:
+  #   build: ./grafana
+  #   ports:
+  #     - 3001:3001
+  #   environment:
+  #     - GF_SERVER_HTTP_PORT=3001
+  #   depends_on:
+  #     - prometheus
 volumes:
   data_volume:
-  prometheus-data:
+  # prometheus-data:
