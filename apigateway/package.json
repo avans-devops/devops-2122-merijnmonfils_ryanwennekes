@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon -r dotenv/config ./bin/www",
     "lint": "npx eslint .",
-    "start": "nodemon ./bin/www --legacy-watch",
+    "start": "nodemon ./bin/www -L",
     "test": "cross-env JEST=true jest --forceExit"
   },
   "dependencies": {
