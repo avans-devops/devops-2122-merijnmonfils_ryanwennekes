@@ -17,7 +17,7 @@ services:
       args:
         PORT: 3001
         DB_PORT: 27017
-        DB_HOST_NAME: mongo
+        DB_HOST_NAME: hostingdb
         DB_NAME: hosting
         DB_USER: username
         DB_PASSWORD: password
@@ -35,7 +35,7 @@ services:
       args:
         PORT: 3002
         DB_PORT: 27018
-        DB_HOST_NAME: mongo
+        DB_HOST_NAME: participationdb
         DB_NAME: hosting
         DB_USER: username
         DB_PASSWORD: password
@@ -62,7 +62,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=username
       - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=hosting
+      - MONGO_INITDB_DATABASE=hostingdb
     ports:
       - 27017:27017
     restart: always
@@ -73,7 +73,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=username
       - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=participation
+      - MONGO_INITDB_DATABASE=participationdb
     ports:
       - 27018:27018
     restart: always
