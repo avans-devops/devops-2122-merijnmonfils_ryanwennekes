@@ -17,7 +17,6 @@ services:
       args:
         PORT: 3001
         DB_PORT: 27017
-        DB_HOST_NAME: mongo
         DB_NAME: hosting
         DB_USER: username
         DB_PASSWORD: password
@@ -35,7 +34,6 @@ services:
       args:
         PORT: 3002
         DB_PORT: 27018
-        DB_HOST_NAME: mongo
         DB_NAME: hosting
         DB_USER: username
         DB_PASSWORD: password
@@ -75,10 +73,21 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=participation
     ports:
-      - 27018:27018
+      - 27018:27017
     restart: always
     volumes:
       - participationdb_volume:/data/participation
+  rabbitmq:
+    image: rabbitmq:3.10-rc-management
+    hostname: MessageQueue
+    volumes:
+      - ./rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/etc/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./rabbitmq/data:/var/lib/rabbitmq/data
+      - ./rabbitmq/logs:/var/log/rabbitmq/log
+    ports:
+      - 5672:5672
+      - 15672:15672
   # db-exporter:
   #   image: bitnami/mongodb-exporter:latest
   #   command: --mongodb.uri=mongodb://username:password@mongo:27017
