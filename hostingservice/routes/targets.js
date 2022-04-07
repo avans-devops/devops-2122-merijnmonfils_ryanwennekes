@@ -1,8 +1,10 @@
 var express = require('express');
 var router = express.Router();
-require('../services/connection');
+require('../services/mongo');
+var rabbitmq = require('../services/rabbitmq');
 var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
+const participationServiceQueue = 'participation-service-updater';
 
 router.get('/:target_id/submissions', async function(req, res, next) {
   var targetID = req.params.target_id;
@@ -31,6 +33,11 @@ router.post('/', async function(req, res, next) {
   try {
     await target.save();
 
+    await rabbitmq.sendToQueue(participationServiceQueue, JSON.stringify({ // Zorg ervoor dat de participationServiceQueue de update ook krijgt, maar alleen wanneer deze bereikbaar is (i.e., message bus).
+      method: "post",
+      model: "target",
+      data: target
+    }));
     return res.send(target);
   } catch (error) {
     next(error);
@@ -47,6 +54,18 @@ router.delete('/:target_id', async function(req, res, next) {
     {
       await targetModel.deleteOne({_id: target._id});
       await submissionModel.deleteMany({_id: {$in: target.submissions}})
+      
+      await rabbitmq.sendToQueue(participationServiceQueue, JSON.stringify({ 
+        method: "delete",
+        model: "target",
+        data: [target]
+      }));
+
+      await rabbitmq.sendToQueue(participationServiceQueue, JSON.stringify({ 
+        method: "delete",
+        model: "submission",
+        data: target.submissions
+      }));
 
       return res.status(200).send(`Target with ID ${targetId} and its submissions have been successfully removed`);
     }

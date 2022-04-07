@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
 require('../services/connection');
+const rabbitmq = require('../services/rabbitmq');
 const targetModel = require('../models/target');
 const submissionModel = require('../models/submission');
-const target = require('../models/target');
+const hostingServiceQueue = 'hosting-service-updater';
 
 router.get('/:target_id/submissions/:submission_id', async function(req, res, next) {
   var submissionID = req.params.submission_id;
@@ -44,6 +45,18 @@ router.post('/:target_id/submissions', async function(req, res, next) {
       target.submissions.push(submission._id);
       await target.save();
 
+      await rabbitmq.sendToQueue(hostingServiceQueue, JSON.stringify({ 
+        method: "post",
+        model: "submission",
+        data: submission
+      }));
+
+      await rabbitmq.sendToQueue(hostingServiceQueue, JSON.stringify({ 
+        method: "put",
+        model: "target",
+        data: target
+      }));
+
       res.status(200).send(submission)
     }
   }
@@ -64,7 +77,19 @@ router.delete('/:target_id/submissions/:submission_id', async function(req, res,
       target.submissions.pull({_id: submissionID});
       await target.save();
 
+      await rabbitmq.sendToQueue(hostingServiceQueue, JSON.stringify({
+        method: "put",
+        model: "target",
+        data: target
+      }))
+
       await submissionModel.deleteOne({_id: submissionID});
+
+      await rabbitmq.sendToQueue(hostingServiceQueue, JSON.stringify({
+        method: "delete",
+        model: "submission",
+        data: [submission]
+      }))
 
       res.status(200).send(`The submission with ID ${submissionID} was successfully deleted`);
     }

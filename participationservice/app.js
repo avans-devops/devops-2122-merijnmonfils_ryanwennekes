@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var targetsRouter = require('./routes/targets');
+require('./services/rabbitmq');
 
 var app = express();
 
