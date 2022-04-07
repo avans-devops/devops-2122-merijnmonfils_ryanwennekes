@@ -1,6 +1,8 @@
 var express = require('express');
-const axios = require('axios');
 var router = express.Router();
+
+// Axios
+const axios = require('axios');
 
 // Circuit breaker
 const circuitBreaker = require('opossum');
@@ -11,20 +13,19 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-breaker.fallback(() => "De hosting service kon niet op tijd worden aangeroepen.");
-breaker.on("fallback", (result) => {
-  console.log(result);
-});
-
 async function callService(httpMethod, service, port, resource, data = null) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
-      validateStatus: false // We willen niet dat Axios zelf errors throwt bij bijvoorbeeld een 404. Dit willen we juist oplossen in de generieke error handler.
+      validateStatus: false
     })
     .then(function(response) {
+      if (!(response.status >= 100 && response.status < 400)) {
+        reject(response);
+      }
+
       resolve(response);
     })
     .catch(function(error) {
@@ -40,7 +41,7 @@ router.get('/:target_id/submissions/:submission_id', function (req, res, next) {
       res.send(response.data)
     })
     .catch((error) => {
-      res.send("De service kon niet op tijd bereikt worden."); // TODO: Ensure that this is handled decently.
+      next(error);
     });
 });
 
@@ -48,7 +49,6 @@ router.get('/:target_id/submissions', function (req, res, next) {
   breaker
     .fire("get", "hostingservice", 3001, `/targets/${req.params.target_id}/submissions`)
     .then((response) => {
-      res.status(response.status);
       res.send(response.data)
     })
     .catch((error) => {
@@ -63,19 +63,19 @@ router.get('/', function (req, res, next) {
       res.send(response.data)
     })
     .catch((error) => {
-      res.send("De service kon niet op tijd bereikt worden."); // TODO: Ensure that this is handled decently.
+      next(error);
     });
 });
 
 // Post routes
 router.post('/:target_id/submissions', function (req, res, next) {
   breaker
-    .fire("post", "participationservice", 3002, `/targets/${req.params.target_id}/submissions`)
+    .fire("post", "participationservice", 3002, `/targets/${req.params.target_id}/submissions`, req.body)
     .then((response) => {
       res.send(response.data)
     })
     .catch((error) => {
-      res.send("De service kon niet op tijd bereikt worden."); // TODO: Ensure that this is handled decently.
+      next(error);
     });
 });
 
@@ -83,7 +83,6 @@ router.post('/', function (req, res, next) {
   breaker
     .fire("post", "hostingservice", 3001, `/targets`, req.body)
     .then((response) => {
-      res.status(response.status);
       res.send(response.data)
     })
     .catch((error) => {
@@ -99,7 +98,7 @@ router.delete('/:target_id/submissions/:submission_id', function(req, res, next)
       res.send(response.data)
     })
     .catch((error) => {
-      res.send("De service kon niet op tijd bereikt worden."); // TODO: Ensure that this is handled decently.
+      next(error);
     });
 })
 
@@ -107,7 +106,6 @@ router.delete('/:target_id', function(req, res, next) {
   breaker
     .fire("delete", "hostingservice", 3001, `/targets/${req.params.target_id}`)
     .then((response) => {
-      res.status(response.status);
       res.send(response.data);
     })
     .catch((error) => {

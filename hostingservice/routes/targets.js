@@ -2,17 +2,17 @@ var express = require('express');
 var router = express.Router();
 require('../services/connection');
 var targetModel = require('../models/target');
-require('../models/submission');
+var submissionModel = require('../models/submission');
 
 router.get('/:target_id/submissions', async function(req, res, next) {
   var targetID = req.params.target_id;
 
   try {
-    var result = await targetModel.findById(targetID).populate('submissions');
+    var result = await targetModel.findById(targetID).populate('submissions').select('submissions -_id');
     
     if (result != null)
     {
-      res.status(200).send(result)
+      res.status(200).send(result.submissions)
     } else {
       const notFoundError = new Error(`Target with ID ${targetID} does not exist.`);
       notFoundError.status = 404;
@@ -30,19 +30,10 @@ router.post('/', async function(req, res, next) {
 
   try {
     await target.save();
-    res.send(target);
+
+    return res.send(target);
   } catch (error) {
-    if (error.name === "ValidationError") {
-      let errors = {};
-
-      Object.keys(error.errors).forEach((key) => {
-        errors[key] = error.errors[key].message;
-      });
-
-      res.status(400).send(errors);
-    }
-
-    res.status(500).send("Something went wrong");
+    next(error);
   }
 })
 
@@ -50,10 +41,14 @@ router.delete('/:target_id', async function(req, res, next) {
   var targetId = req.params.target_id;
 
   try {
-    var result = await targetModel.deleteOne({_id: req.params.target_id})
+    var target = await targetModel.findById(targetId);
 
-    if (result.deletedCount != 0) {
-      res.status(200).send("Target deleted");
+    if (target != null)
+    {
+      await targetModel.deleteOne({_id: target._id});
+      await submissionModel.deleteMany({_id: {$in: target.submissions}})
+
+      return res.status(200).send(`Target with ID ${targetId} and its submissions have been successfully removed`);
     }
 
     const notFoundError = new Error(`Target with ID ${targetId} does not exist.`);

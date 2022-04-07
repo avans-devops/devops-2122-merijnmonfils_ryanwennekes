@@ -73,7 +73,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=participation
     ports:
-      - 27018:27018
+      - 27018:27017
     restart: always
     volumes:
       - participationdb_volume:/data/participation
