@@ -2,9 +2,11 @@ var amqp = require('amqplib/callback_api');
 const target = require('../models/target');
 const submission = require('../models/submission');
 const connectionURI = `amqp://guest:guest@rabbitmq:5672`;
-const exchange = 'synchronization-exchange';
+const synchronizationExchange = 'synchronization-exchange';
 const hostingServiceQueue = 'hosting-service-updater';
 const participationServiceQueue = 'participation-service-updater';
+const rpcResponseQueue = 'rpc_response_queue';
+const rpcCorrelationID = generateUuid();
 
 channel = null;
 
@@ -26,7 +28,7 @@ amqp.connect(connectionURI, function(err, conn) {
       channel.close();
     });
 
-    ch.assertExchange(exchange, 'direct', {
+    ch.assertExchange(synchronizationExchange, 'direct', {
       durable: false
     })
 
@@ -37,7 +39,7 @@ amqp.connect(connectionURI, function(err, conn) {
         throw err;
       }
 
-      ch.bindQueue(queue.queue, exchange, hostingServiceQueue);
+      ch.bindQueue(queue.queue, synchronizationExchange, hostingServiceQueue);
     });
 
     ch.assertQueue(participationServiceQueue, {
@@ -47,17 +49,41 @@ amqp.connect(connectionURI, function(err, conn) {
         throw err;
       }
 
-      ch.bindQueue(queue.queue, exchange, participationServiceQueue);
+      ch.bindQueue(queue.queue, synchronizationExchange, participationServiceQueue);
     });
 
     ch.consume(participationServiceQueue, async function(message) {
-      console.log(`Received a message from ${exchange} queue ${participationServiceQueue}: ${message.content.toString()}`);
+      console.log(`Received a message from ${synchronizationExchange} queue ${participationServiceQueue}: ${message.content.toString()}`);
       await processMessage(JSON.parse(message.content));
     }, {
       noAck: true
     });
+
+    ch.assertQueue(rpcResponseQueue, {
+      exclusive: true
+    }, function(error, queue) {
+      if (error) {
+        throw error;
+      }
+
+      ch.consume(queue.queue, async function(message) {
+        if (message.properties.correlationId == rpcCorrelationID) {
+          await processRPCCall(JSON.parse(message.content));
+        }
+      }, {
+        noAck: true
+      });
+    })
   })
 })
+
+async function processRPCCall(message) {
+  try {
+    submission.updateOne({_id: message.submissionID}, {score: message.similarity});
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function processMessage(message) {
   var model = null;
@@ -90,6 +116,20 @@ async function processMessage(message) {
   }
 }
 
+function generateUuid() {
+  return Math.random().toString() + Math.random().toString() + Math.random().toString();
+}
+
+module.exports.rpcCall = async (message) => {
+  channel.sendToQueue('rpc_queue',
+    Buffer.from(JSON.stringify(message)),
+    {
+      correlationId: rpcCorrelationID,
+      replyTo: rpcResponseQueue
+    }
+  );
+}
+
 module.exports.sendToQueue = async (queueName, data) => {
-  channel.publish(exchange, queueName, Buffer.from(data));
+  channel.publish(synchronizationExchange, queueName, Buffer.from(data));
 }

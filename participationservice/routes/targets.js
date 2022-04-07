@@ -57,6 +57,13 @@ router.post('/:target_id/submissions', async function(req, res, next) {
         data: target
       }));
 
+      await rabbitmq.rpcCall({
+        targetID: target._id,
+        targetImage: target.image,
+        submissionID: submission._id,
+        submissionImage: submission.image
+      });
+
       res.status(200).send(submission)
     }
   }
