@@ -10,6 +10,10 @@ services:
     ports:
       - 3000:3000
     restart: always
+    depends_on:
+      - participationservice
+      - hostingservice
+      - uploadservice
   hostingservice:
     build:
       context: ./hostingservice
@@ -27,6 +31,7 @@ services:
     restart: always
     depends_on:
       - hostingdb
+      - rabbitmq
   participationservice:
     build:
       context: ./participationservice
@@ -44,17 +49,19 @@ services:
     restart: always
     depends_on:
       - participationdb
-  scoringservice:
+      - rabbitmq
+  uploadservice:
     build:
-      context: ./scoringservice
+      context: ./uploadservice
       dockerfile: dockerfile
       args:
         PORT: 3003
     volumes:
-      - ./scoringservice:/scoringservice
+      - ./uploadservice:/uploadservice
     ports:
       - 3003:3003
-    restart: always
+    depends_on:
+      - rabbitmq
   hostingdb:
     image: mongo:latest
     environment:

@@ -1,10 +1,14 @@
+require('dotenv');
 var express = require('express');
 var router = express.Router();
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 require('../services/mongo');
 var rabbitmq = require('../services/rabbitmq');
 var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
 const participationServiceQueue = 'participation-service-updater';
+const cloudinary = require('cloudinary').v2;
 
 router.get('/:target_id/submissions', async function(req, res, next) {
   var targetID = req.params.target_id;
@@ -27,21 +31,24 @@ router.get('/:target_id/submissions', async function(req, res, next) {
   }
 });
 
-router.post('/', async function(req, res, next) {
+router.post('/', upload.single('image'), async function(req, res, next) {
   const target = new targetModel(req.body);
 
-  try {
-    await target.save();
+  console.log(JSON.stringify(req.file));
+  res.send("ok");
 
-    await rabbitmq.sendToQueue(participationServiceQueue, JSON.stringify({ // Zorg ervoor dat de participationServiceQueue de update ook krijgt, maar alleen wanneer deze bereikbaar is (i.e., message bus).
-      method: "post",
-      model: "target",
-      data: target
-    }));
-    return res.send(target);
-  } catch (error) {
-    next(error);
-  }
+  // try {
+  //   await target.save();
+
+  //   await rabbitmq.sendToQueue(participationServiceQueue, JSON.stringify({ // Zorg ervoor dat de participationServiceQueue de update ook krijgt, maar alleen wanneer deze bereikbaar is (i.e., message bus).
+  //     method: "post",
+  //     model: "target",
+  //     data: target
+  //   }));
+  //   return res.status(200).send(target);
+  // } catch (error) {
+  //   next(error);
+  // }
 })
 
 router.delete('/:target_id', async function(req, res, next) {
