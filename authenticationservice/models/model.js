@@ -5,12 +5,25 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   username: {
     type: String,
-    required: true,
-    unique: true
+    minlength: [3, 'Username must be at least 3 characters!'],
+    maxlength: [20, 'Username cannot exceed 20 characters!'],
+    required: [true, 'Username is a required field!']
   },
   password: {
     type: String,
     required: true
+  },
+  role: {
+    type: String,
+    validate: {
+      validator: (value) => {
+        return value == "user" || value == "admin";
+      },
+      message: (properties) => {
+        return `"${properties.value}" is not a valid user account type! Specify either "user" or "admin".`
+      }
+    },
+    required: [true, 'The "role" property is required!']
   }
 });
 

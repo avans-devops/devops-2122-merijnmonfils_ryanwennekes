@@ -28,8 +28,7 @@ router.post(
             { session: false },
             async (error) => {
               if (error) return next(error);
-
-              const body = { _id: user._id, username: user.username };
+              const body = { _id: user._id, username: user.username, role: user.role }; // Geef rol mee, zodat de gateway zometeen kan checken of de gebruiker geauthoriseerd is.
               const token = jwt.sign({ user: body }, process.env.SIGNATURE_KEY);
 
               return res.json({ token });

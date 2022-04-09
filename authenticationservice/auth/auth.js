@@ -3,6 +3,8 @@ const localStrategy = require('passport-local').Strategy;
 const UserModel = require('../models/model');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
+const ValidationError = require('mongoose').Error.ValidationError
+require('../services/mongo');
 
 // // Onderstaande method in API gateway
 // passport.use(
@@ -26,13 +28,25 @@ passport.use(
   new localStrategy(
     {
       usernameField: "username",
-      passwordField: "password"
+      passwordField: "password",
+      passReqToCallback: true
     },
-    async (username, password, done) => {
+    async (req, username, password, done) => {
       try {
-        const user = await UserModel.create({ username, password }); // Plaats user in mongo db.
-        
-        return done(null, user);
+        const role = req.body.role;
+        const result = await UserModel.findOne({username: username});
+
+        if (result) {
+          const error = new ValidationError();
+          error.message = `User validation failed: username: A user with username "${username}" already exists!`;
+          error.status = 400;
+
+          done(error);
+        } else {
+          const user = await UserModel.create({ username, password, role}); // Plaats user in mongo db.
+
+          return done(null, user);
+        }
       } catch (error) {
         done(error);
       }

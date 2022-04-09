@@ -7,16 +7,45 @@ const passport = require('passport');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 
-passport.use(
+passport.use('user-rule',
   new JWTstrategy(
     {
       secretOrKey: process.env.SIGNATURE_KEY,
-      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken()
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     },
-    async (token, done) => {
+    async (payload, done) => {
       try {
-        console.log(token);
-        return done(null, token.user);
+        if (payload.user.role != 'user') {
+          var error = new Error();
+          error.status = 401;
+          error.message = 'You are not authorized to access this resource: you need to be assigned the role of "user".';
+
+          done(error);
+        }
+        return done(null, payload.user);
+      } catch (error) {
+        done(error);
+      }
+    }
+  )
+);
+
+passport.use('admin-rule',
+  new JWTstrategy(
+    {
+      secretOrKey: process.env.SIGNATURE_KEY,
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    },
+    async (payload, done) => {
+      try {
+        if (payload.user.role != 'admin') {
+          var error = new Error();
+          error.status = 401;
+          error.message = 'You are not authorized to access this resource: you need to be assigned the role of "admin".';
+          
+          done(error);
+        }
+        return done(null, payload.user);
       } catch (error) {
         done(error);
       }
@@ -48,7 +77,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(metricsMiddleware);
 
-app.use('/targets', passport.authenticate('jwt', { session: false}), targetsRoute);
+app.use('/targets', passport.authenticate('admin-rule', { session: false}), targetsRoute);
 app.use('/auth', authenticationRoutes);
 
 // catch 404 and forward to error handler
