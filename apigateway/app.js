@@ -3,6 +3,26 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const passport = require('passport');
+const JWTstrategy = require('passport-jwt').Strategy;
+const ExtractJWT = require('passport-jwt').ExtractJwt;
+
+passport.use(
+  new JWTstrategy(
+    {
+      secretOrKey: process.env.SIGNATURE_KEY,
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken()
+    },
+    async (token, done) => {
+      try {
+        console.log(token);
+        return done(null, token.user);
+      } catch (error) {
+        done(error);
+      }
+    }
+  )
+);
 
 const promBundle = require('express-prom-bundle');
 const metricsMiddleware = promBundle({
@@ -15,12 +35,10 @@ const metricsMiddleware = promBundle({
 });
 
 var targetsRoute = require('./routes/targets');
+var authenticationRoutes = require('./routes/auth');
 
 var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.use(passport.initialize())
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -30,7 +48,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(metricsMiddleware);
 
-app.use('/targets', targetsRoute);
+app.use('/targets', passport.authenticate('jwt', { session: false}), targetsRoute);
+app.use('/auth', authenticationRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
