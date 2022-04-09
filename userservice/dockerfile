@@ -1,0 +1,9 @@
+FROM node:14
+
+WORKDIR /userservice
+
+COPY package.json /userservice
+
+RUN npm install
+
+CMD ["npm", "start"]

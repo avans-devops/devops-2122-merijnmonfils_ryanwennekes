@@ -1,0 +1,9 @@
+FROM node:14
+
+WORKDIR /scoringrpc
+
+COPY package.json /scoringrpc
+
+RUN npm install
+
+CMD ["npm", "start"]

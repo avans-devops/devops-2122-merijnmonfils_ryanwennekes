@@ -6,6 +6,7 @@ var logger = require('morgan');
 const passport = require('passport');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
+const bodyParser = require('body-parser');
 
 passport.use('user-rule',
   new JWTstrategy(
@@ -74,6 +75,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(metricsMiddleware);
 

@@ -3,7 +3,6 @@ var router = express.Router();
 const multer = require('multer');
 const FormData = require('form-data');
 const fs = require('fs');
-const rabbitmq = require('../services/rabbitmq');
 const upload = multer({ dest: 'uploads/' });
 
 // Axios
@@ -18,15 +17,13 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-async function callService(httpMethod, service, port, resource, data = null, contentType = 'application/json') {
+async function callService(httpMethod, service, port, resource, data = new FormData()) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
-      headers: {
-        'Content-Type': contentType
-      },
+      headers: data.getHeaders(),
       validateStatus: false
     })
     .then(function(response) {
@@ -37,6 +34,7 @@ async function callService(httpMethod, service, port, resource, data = null, con
       resolve(response);
     })
     .catch(function(error) {
+      console.log(JSON.stringify(error));
       reject(error);
     });
   });
@@ -44,7 +42,7 @@ async function callService(httpMethod, service, port, resource, data = null, con
 
 router.get('/:target_id/submissions/:submission_id', function (req, res, next) {
   breaker
-    .fire("get", "participationservice", 3002, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
+    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
     .then((response) => {
       res.send(response.data)
     })
@@ -55,7 +53,7 @@ router.get('/:target_id/submissions/:submission_id', function (req, res, next) {
 
 router.get('/:target_id/submissions', function (req, res, next) {
   breaker
-    .fire("get", "hostingservice", 3001, `/targets/${req.params.target_id}/submissions`)
+    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`)
     .then((response) => {
       res.send(response.data)
     })
@@ -66,7 +64,7 @@ router.get('/:target_id/submissions', function (req, res, next) {
 
 router.get('/', function (req, res, next) {
   breaker
-    .fire("get", "participationservice", 3002, "/targets")
+    .fire('get', process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, "/targets")
     .then((response) => {
       res.send(response.data)
     })
@@ -76,61 +74,46 @@ router.get('/', function (req, res, next) {
 });
 
 // Post routes
-router.post('/:target_id/submissions', function (req, res, next) {
+router.post('/:target_id/submissions', upload.single('image'), function (req, res, next) {
+  const formData = new FormData();
+  formData.append('image', fs.createReadStream(req.file.path));
+  Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
+
   breaker
-    .fire("post", "participationservice", 3002, `/targets/${req.params.target_id}/submissions`, req.body)
+    .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`, formData)
     .then((response) => {
       res.send(response.data)
     })
     .catch((error) => {
       next(error);
+    })
+    .finally(() => {
+      fs.unlink(req.file.path, () => {});
     });
 });
 
 router.post('/', upload.single('image'), function (req, res, next) {
-  // var file = fs.readFileSync(req.file.path);
-  // // Stuur request door naar hosting service met content type multipart-formdata
-  // // Deze valideert, geeft een response terug
-  // var imageBase64 = Buffer.from(file).toString('base64');
-  // var request = req.body;
-
-  // rabbitmq.uploadImage(imageBase64, req.file.mimetype, request);
-
-  // res.status(200).send("Target has been sent for submission");
-  var formData = new FormData();
+  const formData = new FormData();
+  formData.append('image', fs.createReadStream(req.file.path));
   Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
-  formData.append("image", fs.readFileSync(req.file.path));
-
-  console.log(formData);
 
   breaker
-    .fire("post", "hostingservice", 3001, `/targets`, formData, 'multipart/form-data')  // Send the remaining body data to the hosting service directly.
-    .then((response) => {
-      res.status(200).send(response.data)
-    })
-    .catch((error) => {
-      next(error);
-    });
+  .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets`, formData)  // Send the remaining body data to the user service directly.
+  .then((response) => {
+    res.status(200).send(response.data)
+  })
+  .catch((error) => {
+    next(error);
+  })
+  .finally(() => {
+    fs.unlink(req.file.path, () => {});
+  });
 })
-
-// URL has been generated, now the request can be sent to the hosting service.
-module.exports.postTarget = (url, request) => {
-  request.image = url;
-
-  breaker
-    .fire("post", "hostingservice", 3001, `/targets`, request)  // Send the remaining body data to the hosting service directly.
-    .then((response) => {
-      res.send(response.data)
-    })
-    .catch((error) => {
-      next(error);
-    });
-}
 
 // Delete routes
 router.delete('/:target_id/submissions/:submission_id', function(req, res, next) {
   breaker
-    .fire("delete", "participationservice", 3002, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
+    .fire("delete", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
     .then((response) => {
       res.send(response.data)
     })
@@ -141,7 +124,7 @@ router.delete('/:target_id/submissions/:submission_id', function(req, res, next)
 
 router.delete('/:target_id', function(req, res, next) {
   breaker
-    .fire("delete", "hostingservice", 3001, `/targets/${req.params.target_id}`)
+    .fire("delete", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}`)
     .then((response) => {
       res.send(response.data);
     })

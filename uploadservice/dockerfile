@@ -1,9 +1,0 @@
-FROM node:14
-
-WORKDIR /uploadservice
-
-COPY package.json /uploadservice
-
-RUN npm install
-
-CMD ["npm", "start"]
