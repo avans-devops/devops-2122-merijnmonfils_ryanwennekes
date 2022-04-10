@@ -18,7 +18,7 @@ jobs:
       - run: npm install
 
       - name: NYC Coverage Report
-          uses: Tintef/nyc-reporter-action@0.1.0
+        uses: Tintef/nyc-reporter-action@0.1.0
         with:
           coverage-command: "nyc --reporter=text mocha ./**/test/*test.js"
           token: ${{ secrets.GITHUB_TOKEN }}
