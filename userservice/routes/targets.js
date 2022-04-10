@@ -9,6 +9,7 @@ var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
+const PAGE_SIZE = 5;
 
 router.get('/:target_id/submissions/:submission_id', async function(req, res, next) {
   var submissionID = req.params.submission_id;
@@ -29,13 +30,27 @@ router.get('/:target_id/submissions/:submission_id', async function(req, res, ne
 
 router.get('/:target_id/submissions', async function(req, res, next) {
   var targetID = req.params.target_id;
+  var sort = req.query.sort;
+  var limit = req.query.size || 5;
+  var page = req.query.page || 1;
 
   try {
-    var result = await targetModel.findById(targetID).populate('submissions').select('submissions -_id');
+    var result = await targetModel
+                        .findById(targetID)
+                        .populate('submissions')
+                        .select('submissions -_id')
+                        .sort(sort)
+                        .skip((page - 1) * limit)
+                        .limit(limit);
     
     if (result != null)
     {
-      return res.status(200).send(result.submissions)
+      return res.status(200).send(
+        {
+          message: `Showing a total of ${result.submissions.length} items. Current page is ${page}. Current document limit is ${limit}`,
+          submissions: result.submissions
+        }
+      )
     } else {
       const notFoundError = new Error(`Target with ID ${targetID} does not exist.`);
       notFoundError.status = 404;
@@ -59,10 +74,24 @@ router.get('/:target_id', async function(req, res, next) {
 });
 
 router.get('/', async function(req, res, next) {
-  try {
-    var result = await targetModel.find({}).populate('submissions');
+  var sort = req.query.sort;
+  var limit = req.query.size || 5;
+  var page = req.query.page || 1;
 
-    return res.status(200).send(result);
+  try {
+    var results = await targetModel
+                        .find({})
+                        .populate('submissions')
+                        .sort(sort)
+                        .skip((page - 1) * limit)
+                        .limit(limit);
+
+    return res.status(200).send(
+      {
+        message: `Showing a total of ${results.length} items. Current page is ${page}. Current document limit is ${limit}`,
+        targets: results
+      }
+    );
   } catch (error) {
     next(error);
   }

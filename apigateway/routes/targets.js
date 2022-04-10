@@ -17,13 +17,14 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-async function callService(httpMethod, service, port, resource, data = {}, headers = {}) {
+async function callService(httpMethod, service, port, resource, data = {}, headers = {}, queryParams = {}) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
       headers: headers,
+      params: queryParams,
       validateStatus: false
     })
     .then(function(response) {
@@ -53,7 +54,7 @@ router.get('/:target_id/submissions/:submission_id', function (req, res, next) {
 
 router.get('/:target_id/submissions', function (req, res, next) {
   breaker
-    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`)
+    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`, {}, {}, req.query)
     .then((response) => {
       res.send(response.data)
     })
@@ -75,7 +76,7 @@ router.get('/:target_id', function (req, res, next) {
 
 router.get('/', function (req, res, next) {
   breaker
-    .fire('get', process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, "/targets")
+    .fire('get', process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, "/targets", {}, {}, req.query)
     .then((response) => {
       res.send(response.data)
     })

@@ -20,10 +20,21 @@ router.get('/:submission_id', async (req, res, next) => {
 });
 
 router.get('/', async (req, res, next) => {
-  try {
-    const results = await submissionModel.find();
+  var sort = req.query.sort;
+  var limit = req.query.size || 5;
+  var page = req.query.page || 1;
 
-    return res.status(200).send(results);
+  try {
+    const results = await submissionModel
+                            .find({})
+                            .sort(sort)
+                            .skip((page - 1) * limit)
+                            .limit(limit);
+
+    return res.status(200).send({
+      message: `Showing a total of ${results.length} items. Current page is ${page}. Current document limit is ${limit}`,
+      results
+    });
   } catch (error) {
     next(error);
   }

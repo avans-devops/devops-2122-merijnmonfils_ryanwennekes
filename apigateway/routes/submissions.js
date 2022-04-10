@@ -13,16 +13,14 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-async function callService(httpMethod, service, port, resource, data = {}, headers = {}) {
+async function callService(httpMethod, service, port, resource, data = {}, headers = {}, queryParams = {}) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
       headers: headers,
-      params: {
-        sort: "score"
-      },
+      params: queryParams,
       validateStatus: false
     })
     .then(function(response) {
@@ -52,7 +50,7 @@ router.get('/:submission_id', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   breaker
-    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions`)
+    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions`, {}, {}, req.query)
     .then((response) => {
       res.send(response.data)
     })
