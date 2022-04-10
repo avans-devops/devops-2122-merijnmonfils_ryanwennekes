@@ -4,55 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const passport = require('passport');
-const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 const bodyParser = require('body-parser');
-
-passport.use('user-rule',
-  new JWTstrategy(
-    {
-      secretOrKey: process.env.SIGNATURE_KEY,
-      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    },
-    async (payload, done) => {
-      try {
-        if (payload.user.role != 'user') {
-          var error = new Error();
-          error.status = 401;
-          error.message = 'You are not authorized to access this resource: you need to be assigned the role of "user".';
-
-          done(error);
-        }
-        return done(null, payload.user);
-      } catch (error) {
-        done(error);
-      }
-    }
-  )
-);
-
-passport.use('admin-rule',
-  new JWTstrategy(
-    {
-      secretOrKey: process.env.SIGNATURE_KEY,
-      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    },
-    async (payload, done) => {
-      try {
-        if (payload.user.role != 'admin') {
-          var error = new Error();
-          error.status = 401;
-          error.message = 'You are not authorized to access this resource: you need to be assigned the role of "admin".';
-          
-          done(error);
-        }
-        return done(null, payload.user);
-      } catch (error) {
-        done(error);
-      }
-    }
-  )
-);
 
 const promBundle = require('express-prom-bundle');
 const metricsMiddleware = promBundle({
@@ -72,9 +25,7 @@ var app = express();
 app.use(passport.initialize())
 
 app.use((req, res, next) => {
-  const payload = ExtractJWT.fromAuthHeaderAsBearerToken();
-
-  req.user = payload.user;
+  req.headers.authorization = req.headers.authorization;
   next();
 })
 
@@ -87,9 +38,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(metricsMiddleware);
 
-app.use('/targets', passport.authenticate('admin-rule', { session: false}), targetsRoute);
-app.use('/submissions', passport.authenticate('admin-rule', { session: false}), submissionsRoute);
 app.use('/auth', authenticationRoutes);
+
+// Voeg JWT token toe aan alle requests richting de user service.
+
+app.use('/targets', targetsRoute);
+app.use('/submissions', submissionsRoute);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

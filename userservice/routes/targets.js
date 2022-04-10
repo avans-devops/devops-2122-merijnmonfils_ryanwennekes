@@ -9,6 +9,8 @@ var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
+const submissionValidator = require('../business/validate-submission');
+const validateSubmission = require('../business/validate-submission');
 
 router.get('/:target_id/submissions/:submission_id', async function(req, res, next) {
   var submissionID = req.params.submission_id;
@@ -29,13 +31,27 @@ router.get('/:target_id/submissions/:submission_id', async function(req, res, ne
 
 router.get('/:target_id/submissions', async function(req, res, next) {
   var targetID = req.params.target_id;
+  var sort = req.query.sort;
+  var limit = req.query.size || 5;
+  var page = req.query.page || 1;
 
   try {
-    var result = await targetModel.findById(targetID).populate('submissions').select('submissions -_id');
+    var result = await targetModel
+                        .findById(targetID)
+                        .populate('submissions')
+                        .select('submissions -_id')
+                        .sort(sort)
+                        .skip((page - 1) * limit)
+                        .limit(limit);
     
     if (result != null)
     {
-      return res.status(200).send(result.submissions)
+      return res.status(200).send(
+        {
+          message: `Showing a total of ${result.submissions.length} items. Current page is ${page}. Current document limit is ${limit}`,
+          submissions: result.submissions
+        }
+      )
     } else {
       const notFoundError = new Error(`Target with ID ${targetID} does not exist.`);
       notFoundError.status = 404;
@@ -48,11 +64,35 @@ router.get('/:target_id/submissions', async function(req, res, next) {
   }
 });
 
-router.get('/', async function(req, res, next) {
+router.get('/:target_id', async function(req, res, next) {
   try {
-    var result = await targetModel.find({}).populate('submissions');
+    var result = await targetModel.findOne({_id: req.params.target_id}).populate('submissions');
 
     return res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/', async function(req, res, next) {
+  var sort = req.query.sort;
+  var limit = req.query.size || 5;
+  var page = req.query.page || 1;
+
+  try {
+    var results = await targetModel
+                        .find({})
+                        .populate('submissions')
+                        .sort(sort)
+                        .skip((page - 1) * limit)
+                        .limit(limit);
+
+    return res.status(200).send(
+      {
+        message: `Showing a total of ${results.length} items. Current page is ${page}. Current document limit is ${limit}`,
+        targets: results
+      }
+    );
   } catch (error) {
     next(error);
   }
@@ -67,11 +107,17 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
       .then(async (response) => {
         var target = await targetModel.findById(req.params.target_id);
         var submission = new submissionModel(req.body);
+        submission.user = req.user;
         submission.image = response.url;
-
-        if (target != null) {
+        
+        await validateSubmission(target, req.user, async (err) => {
+          if (err)
+          {
+            throw err;
+          }
+          
           submission.target = target._id;
-          await submission.save();
+          await submission.save();          
 
           target.submissions.push(submission._id);
           await target.save();
@@ -84,7 +130,20 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
           });
 
           return res.status(200).send("Your submission has been sent to the queue for score comparison!");
-        }
+        })
+
+        // if (target != null) {
+        //   // Check whether user is not actually the creator of the target.
+        //   console.log(`target ${JSON.stringify(target)}, user ${JSON.stringify(req.user)}`);
+        //   if (target.user._id == req.user._id)
+        //   {
+        //     // Error callback, return 400 and message
+        //     return res.status(400).send("You cannot post submissions under your own target!");
+        //   }
+
+        //   // Success callback
+
+        // }
       })
       .catch((error) => {
         next(error);
@@ -105,6 +164,9 @@ router.post('/', upload.single('image'), async function(req, res, next) {
       })
       .then(async (response) => {
         const target = new targetModel(req.body);
+        target.user = req.user;
+        console.log(target.user._id);
+        console.log(target.user.username);
         target.image = response.url;
 
         await target.save();
@@ -139,7 +201,7 @@ router.put('/:target_id', async function(req, res, next) {
         return res.status(400).send("No changes have been applied!");
       }
 
-      await targetModel.updateOne({id: targetID}, req.body);
+      await targetModel.updateOne({_id: targetID}, req.body, { runValidators: true});
 
       return res.status(200).send(`Target with ID ${targetID} has been successfully updated!`);
     }
@@ -166,10 +228,10 @@ router.delete('/:target_id/submissions/:submission_id', async function(req, res,
       await target.save();
       await submissionModel.deleteOne({_id: submissionID});
 
-      res.status(200).send(`The submission with ID ${submissionID} was successfully deleted`);
+      return res.status(200).send(`The submission with ID ${submissionID} was successfully deleted`);
     }
 
-    res.status(404).send(`The submission with ID ${submissionID} was not found.`);
+    return res.status(404).send(`The submission with ID ${submissionID} was not found.`);
   } catch (error) {
     next(error);
   }
@@ -184,7 +246,7 @@ router.delete('/:target_id', async function(req, res, next) {
     if (target != null)
     {
       await targetModel.deleteOne({_id: target._id});
-      await submissionModel.deleteMany({_id: {$in: target.submissions}})
+      await submissionModel.deleteMany({target: target._id});
 
       return res.status(200).send(`Target with ID ${targetId} and its submissions have been successfully removed`);
     }

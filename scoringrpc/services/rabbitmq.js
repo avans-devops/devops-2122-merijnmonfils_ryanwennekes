@@ -5,6 +5,7 @@ const pendingScoringQueue = "pending_scoring_queue";
 const pendingBinding = "pending";
 const axios = require('axios');
 const imaggaURL = "https://api.imagga.com/v2/images-similarity/categories/personal_photos";
+const similarityCalculator = require('../business/similarity-calculator');
 
 amqp.connect(messageBrokerURI, function(err, connection) {
   if (err) {
@@ -47,9 +48,7 @@ amqp.connect(messageBrokerURI, function(err, connection) {
       })
       .then(function(response) {
         var distance = response.data.result.distance;
-        console.log(`DISTANCE: ${distance}`);
-        var similarity = 100 - (distance * 100)
-        similarity = Math.min(100, Math.max(0, similarity));
+        var similarity = similarityCalculator(distance);
 
         var result = {
           submissionID: parsedMessage.submissionID,

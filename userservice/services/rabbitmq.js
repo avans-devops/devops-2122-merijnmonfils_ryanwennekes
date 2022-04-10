@@ -1,3 +1,4 @@
+require('../services/mongo');
 const amqp = require('amqplib/callback_api');
 const messageBrokerURI = `amqp://${process.env.AMQP_USER}:${process.env.AMQP_PASSWORD}@${process.env.AMQP_SERVICE}:${process.env.AMQP_PORT}`;
 const exchange = "scoring_exchange";
@@ -58,8 +59,9 @@ amqp.connect(messageBrokerURI, function(error, connection) {
 })
 
 async function RPCResponse(message) {
+  console.log(message);
   try {
-    submission.updateOne({_id: message.submissionID}, {score: message.similarity});
+    await submission.updateOne({_id: message.submissionID}, {score: message.similarity});
   } catch (error) {
     throw error;
   }

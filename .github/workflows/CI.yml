@@ -6,20 +6,8 @@ on:
   pull_request:
     branches:
       - main
-defaults:
-  run:
-    working-directory: ./apigateway
+    
 jobs:
-  code_coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-        name: Check out repository
-      - uses: ArtiomTr/jest-coverage-report-action@v2
-        name: Run tests
-        with:
-          working-directory: ./apigateway
-          test-script: npm test
   es_lint:
     runs-on: ubuntu-latest
     steps:
@@ -27,3 +15,38 @@ jobs:
         name: Check out repository
       - name: run ESLint
         run: npx eslint .
+  auth_service_code_coverage:
+    defaults:
+      run:
+        working-directory: ./authenticationservice
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - run: npm install
+
+      - name: Run Mocha Tests
+        run: npm run coverage
+
+      name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 100
+
+      - name: Fetch base
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=100
+
+      - name: Generate NYC report
+        run: |
+          npx nyc report \
+            --reporter json-summary \
+            --report-dir nyc-coverage-report \
+            --exclude-after-remap false
+
+      - name: Report NYC coverage
+        uses: sidx1024/report-nyc-coverage-github-action@v1.2.6
+        with:
+          coverage_file: "authenticationservice/nyc-coverage-report/coverage-summary.json"
+          base_coverage_file: "authenticationservice/nyc-coverage-report/coverage-summary.json"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

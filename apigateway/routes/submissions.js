@@ -13,13 +13,16 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-async function callService(httpMethod, service, port, resource, data = {}, headers = {}) {
+async function callService(jwt, httpMethod, service, port, resource, data = {}, queryParams = {}) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
-      headers: headers,
+      headers: {
+        'Authorization': jwt
+      },
+      params: queryParams,
       validateStatus: false
     })
     .then(function(response) {
@@ -38,7 +41,7 @@ async function callService(httpMethod, service, port, resource, data = {}, heade
 
 router.get('/:submission_id', async (req, res, next) => {
   breaker
-    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions/${req.params.submission_id}`)
+    .fire(req.headers.authorization, "get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions/${req.params.submission_id}`)
     .then((response) => {
       res.send(response.data)
     })
@@ -49,7 +52,7 @@ router.get('/:submission_id', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   breaker
-    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions`)
+    .fire(req.headers.authorization, "get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions`, {}, req.query)
     .then((response) => {
       res.send(response.data)
     })
@@ -60,7 +63,7 @@ router.get('/', async (req, res, next) => {
 
 router.put('/:submission_id', async (req, res, next) => {
   breaker
-    .fire("put", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions/${req.params.submission_id}`, req.body)
+    .fire(req.headers.authorization, "put", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions/${req.params.submission_id}`, req.body)
     .then((response) => {
       res.send(response.data)
     })
@@ -71,7 +74,7 @@ router.put('/:submission_id', async (req, res, next) => {
 
 router.delete('/:submission_id', async (req, res, next) => {
   breaker
-    .fire("delete", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions/${req.params.submission_id}`)
+    .fire(req.headers.authorization, "delete", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/submissions/${req.params.submission_id}`)
     .then((response) => {
       res.send(response.data)
     })
