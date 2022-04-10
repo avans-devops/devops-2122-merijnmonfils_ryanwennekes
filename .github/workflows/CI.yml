@@ -31,8 +31,8 @@ jobs:
       - name: NYC Coverage Report
         uses: Tintef/nyc-reporter-action@0.1.0
         with:
-          coverage-command: "nyc --reporter=text mocha ./test/*test.js"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORTER: 'text'
   user_service_code_coverage:
     defaults:
       run:
