@@ -48,6 +48,16 @@ router.get('/:target_id/submissions', async function(req, res, next) {
   }
 });
 
+router.get('/:target_id', async function(req, res, next) {
+  try {
+    var result = await targetModel.findOne({_id: req.params.target_id}).populate('submissions');
+
+    return res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/', async function(req, res, next) {
   try {
     var result = await targetModel.find({}).populate('submissions');
@@ -71,7 +81,7 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
 
         if (target != null) {
           submission.target = target._id;
-          await submission.save();
+          await submission.save();          
 
           target.submissions.push(submission._id);
           await target.save();
@@ -105,6 +115,8 @@ router.post('/', upload.single('image'), async function(req, res, next) {
       })
       .then(async (response) => {
         const target = new targetModel(req.body);
+        console.log(target.user._id);
+        console.log(target.user.username);
         target.image = response.url;
 
         await target.save();
@@ -139,7 +151,7 @@ router.put('/:target_id', async function(req, res, next) {
         return res.status(400).send("No changes have been applied!");
       }
 
-      await targetModel.updateOne({id: targetID}, req.body);
+      await targetModel.updateOne({_id: targetID}, req.body, { runValidators: true});
 
       return res.status(200).send(`Target with ID ${targetID} has been successfully updated!`);
     }
@@ -184,7 +196,7 @@ router.delete('/:target_id', async function(req, res, next) {
     if (target != null)
     {
       await targetModel.deleteOne({_id: target._id});
-      await submissionModel.deleteMany({_id: {$in: target.submissions}})
+      await submissionModel.deleteMany({target: target._id});
 
       return res.status(200).send(`Target with ID ${targetId} and its submissions have been successfully removed`);
     }

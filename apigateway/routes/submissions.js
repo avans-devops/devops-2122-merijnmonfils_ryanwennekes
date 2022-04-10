@@ -20,6 +20,9 @@ async function callService(httpMethod, service, port, resource, data = {}, heade
       url: `http://${service}:${port}${resource}`,
       data: data,
       headers: headers,
+      params: {
+        sort: "score"
+      },
       validateStatus: false
     })
     .then(function(response) {

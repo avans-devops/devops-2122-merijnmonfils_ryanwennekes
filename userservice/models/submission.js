@@ -4,8 +4,9 @@ const Schema = mongoose.Schema;
 var submissionSchema = new mongoose.Schema({
   score: {
     type: Number,
-    required: false
-  }, // False, want het berekenen van de score wordt gedaan door een autonome service.
+    required: true,
+    default: 0
+  },
   image: {
     type: String,
     required: true

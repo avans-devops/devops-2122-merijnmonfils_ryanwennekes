@@ -62,6 +62,17 @@ router.get('/:target_id/submissions', function (req, res, next) {
     });
 });
 
+router.get('/:target_id', function (req, res, next) {
+  breaker
+    .fire('get', process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}`)
+    .then((response) => {
+      res.send(response.data)
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
 router.get('/', function (req, res, next) {
   breaker
     .fire('get', process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, "/targets")
