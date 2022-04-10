@@ -17,6 +17,9 @@ jobs:
         name: Check out repository
       - run: npm install
 
+      - name: Run Mocha Tests
+        run: npm test
+
       - name: NYC Coverage Report
         uses: Tintef/nyc-reporter-action@0.1.0
         with:
