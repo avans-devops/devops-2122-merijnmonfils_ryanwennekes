@@ -6,11 +6,17 @@ on:
   pull_request:
     branches:
       - main
-defaults:
-  run:
-    working-directory: .
+    
 jobs:
-  code_coverage:
+  es_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - name: run ESLint
+        run: npx eslint .
+  auth_service_code_coverage:
+    working-directory: ./authenticationservice
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -23,12 +29,37 @@ jobs:
       - name: NYC Coverage Report
         uses: Tintef/nyc-reporter-action@0.1.0
         with:
-          coverage-command: "nyc --reporter=text mocha ./**/test/*test.js"
+          coverage-command: "nyc --reporter=text mocha ./test/*test.js"
           token: ${{ secrets.GITHUB_TOKEN }}
-  es_lint:
+  user_service_code_coverage:
+    working-directory: ./userservice
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
         name: Check out repository
-      - name: run ESLint
-        run: npx eslint .
+      - run: npm install
+
+      - name: Run Mocha Tests
+        run: npm test
+
+      - name: NYC Coverage Report
+        uses: Tintef/nyc-reporter-action@0.1.0
+        with:
+          coverage-command: "nyc --reporter=text mocha ./test/*test.js"
+          token: ${{ secrets.GITHUB_TOKEN }}
+  scoring_rpc_server_code_coverage:
+    working-directory: ./scoringrpc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - run: npm install
+
+      - name: Run Mocha Tests
+        run: npm test
+
+      - name: NYC Coverage Report
+        uses: Tintef/nyc-reporter-action@0.1.0
+        with:
+          coverage-command: "nyc --reporter=text mocha ./test/*test.js"
+          token: ${{ secrets.GITHUB_TOKEN }}
