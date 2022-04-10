@@ -15,11 +15,18 @@ jobs:
     steps:
       - uses: actions/checkout@v1
         name: Check out repository
-      - uses: ArtiomTr/jest-coverage-report-action@v2
-        name: Run tests
+      - run: npm install
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
         with:
-          working-directory: ./apigateway
-          test-script: npm test
+          name: Mocha Tests            # Name of the check run which will be created
+          path: reports/mocha-*.xml    # Path to test results
+          reporter: mocha-json
   es_lint:
     runs-on: ubuntu-latest
     steps:

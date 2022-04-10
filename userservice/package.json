@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www -L"
+    "start": "nodemon ./bin/www -L",
+    "test": "nyc mocha ./**/*.test.js"
   },
   "dependencies": {
     "amqplib": "^0.8.0",
