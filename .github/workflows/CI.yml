@@ -8,7 +8,7 @@ on:
       - main
 defaults:
   run:
-    working-directory: ./apigateway
+    working-directory: .
 jobs:
   code_coverage:
     runs-on: ubuntu-latest
