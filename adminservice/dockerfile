@@ -1,0 +1,9 @@
+FROM node:14
+
+WORKDIR /adminservice
+
+COPY package.json /adminservice
+
+RUN npm install
+
+CMD ["npm", "start"]

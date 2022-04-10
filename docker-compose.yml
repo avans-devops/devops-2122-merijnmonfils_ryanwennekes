@@ -5,78 +5,46 @@ services:
     build:
       context: ./apigateway
       dockerfile: dockerfile
+    environment:
+      PORT: 3000
+      AUTH_PORT: 3001
+      SIGNATURE_KEY: DITMOETGEINJECTEERDWORDEN
+      USER_SERVICE_NAME: userservice
+      USER_SERVICE_PORT: 3002
     volumes:
       - ./apigateway:/apigateway
     ports:
       - 3000:3000
     restart: always
-  hostingservice:
+    depends_on:
+      - authenticationservice
+      - userservice
+  authenticationservice:
     build:
-      context: ./hostingservice
+      context: ./authenticationservice
       dockerfile: dockerfile
-      args:
-        PORT: 3001
-        DB_PORT: 27017
-        DB_NAME: hosting
-        DB_USER: username
-        DB_PASSWORD: password
+    environment:
+      PORT: 3001
+      DB_PORT: 27017
+      DB_NAME: authenticationdatabase
+      DB_USER: username
+      DB_PASSWORD: password
+      SIGNATURE_KEY: DITMOETGEINJECTEERDWORDEN
     volumes:
-      - ./hostingservice:/hostingservice
+      - ./authenticationservice:/authenticationservice
     ports:
       - 3001:3001
-    restart: always
-    depends_on:
-      - hostingdb
-  participationservice:
-    build:
-      context: ./participationservice
-      dockerfile: dockerfile
-      args:
-        PORT: 3002
-        DB_PORT: 27018
-        DB_NAME: hosting
-        DB_USER: username
-        DB_PASSWORD: password
-    volumes:
-      - ./participationservice:/participationservice
-    ports:
-      - 3002:3002
-    restart: always
-    depends_on:
-      - participationdb
-  scoringservice:
-    build:
-      context: ./scoringservice
-      dockerfile: dockerfile
-      args:
-        PORT: 3003
-    volumes:
-      - ./scoringservice:/scoringservice
-    ports:
-      - 3003:3003
-    restart: always
-  hostingdb:
+  authenticationdatabase:
     image: mongo:latest
     environment:
       - MONGO_INITDB_ROOT_USERNAME=username
       - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=hosting
+      - MONGO_INITDB_DATABASE=authenticationdatabase
     ports:
       - 27017:27017
     restart: always
     volumes:
-      - hostingdb_volume:/data/hosting
-  participationdb:
-    image: mongo:latest
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=username
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=participation
-    ports:
-      - 27018:27017
-    restart: always
-    volumes:
-      - participationdb_volume:/data/participation
+      - authentication_db_volume:/data/authentication
   rabbitmq:
     image: rabbitmq:3.10-rc-management
     hostname: MessageQueue
@@ -88,6 +56,96 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+  userservice:
+    build:
+      context: ./userservice
+      dockerfile: dockerfile
+    environment:
+      PORT: 3002
+      DB_PORT: 27017
+      DB_NAME: userdb
+      DB_USER: username
+      DB_PASSWORD: password
+      CLOUDINARY_URL: cloudinary://559531251433398:SHVH8OeOpoP_ERQWjODpQtR4lyI@avansryan
+      AMQP_USER: guest
+      AMQP_PASSWORD: guest
+      AMQP_SERVICE: rabbitmq
+      AMQP_PORT: 5672
+    volumes:
+      - ./userservice:/userservice
+    ports:
+      - 3002:3002
+    restart: always
+    depends_on:
+      - userdb
+      - rabbitmq
+  userdb:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=username
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=userdb
+    ports:
+      - 27018:27017
+    restart: always
+    volumes:
+      - userdb_volume:/data/user
+  adminservice:
+    build:
+      context: ./adminservice
+      dockerfile: dockerfile
+    environment:
+      PORT: 3004
+      DB_PORT: 27017
+      DB_NAME: admindb
+      DB_USER: username
+      DB_PASSWORD: password
+      AMQP_USER: guest
+      AMQP_PASSWORD: guest
+      AMQP_SERVICE: rabbitmq
+      AMQP_PORT: 5672
+    volumes:
+      - ./adminservice:/adminservice
+    ports:
+      - 3004:3004
+    restart: always
+    depends_on:
+      - admindb
+      - rabbitmq
+  admindb:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=username
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=admindb
+    ports:
+      - 27019:27017
+    restart: always
+    volumes:
+      - admindb_volume:/data/admin
+  scoringrpc:
+    build:
+      context: ./scoringrpc
+      dockerfile: dockerfile
+      args:
+        PORT: 3003
+    environment:
+      IMAGGA_SIGNATURE_KEY: YWNjXzYyNzMzZjBhODk1OWU4Zjo2ZWE3N2M0NGU0YjdjNDQ4Y2Q5MTU5ODE1MTJjZDU4MQ==
+      AMQP_USER: guest
+      AMQP_PASSWORD: guest
+      AMQP_SERVICE: rabbitmq
+      AMQP_PORT: 5672
+    volumes:
+      - ./scoringrpc:/scoringrpc
+    ports:
+      - 3003:3003
+    depends_on:
+      - rabbitmq
+      - userservice
+volumes:
+    authentication_db_volume:
+    userdb_volume:
+    admindb_volume:
   # db-exporter:
   #   image: bitnami/mongodb-exporter:latest
   #   command: --mongodb.uri=mongodb://username:password@mongo:27017
@@ -112,7 +170,6 @@ services:
   #     - GF_SERVER_HTTP_PORT=3001
   #   depends_on:
   #     - prometheus
-volumes:
-  hostingdb_volume:
-  participationdb_volume:
+#   hostingdb_volume:
+#   participationdb_volume:
   # prometheus-data:

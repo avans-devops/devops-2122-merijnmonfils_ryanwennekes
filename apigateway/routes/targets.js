@@ -1,5 +1,9 @@
 var express = require('express');
 var router = express.Router();
+const multer = require('multer');
+const FormData = require('form-data');
+const fs = require('fs');
+const upload = multer({ dest: 'uploads/' });
 
 // Axios
 const axios = require('axios');
@@ -13,12 +17,13 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-async function callService(httpMethod, service, port, resource, data = null) {
+async function callService(httpMethod, service, port, resource, data = {}, headers = {}) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
+      headers: headers,
       validateStatus: false
     })
     .then(function(response) {
@@ -29,6 +34,7 @@ async function callService(httpMethod, service, port, resource, data = null) {
       resolve(response);
     })
     .catch(function(error) {
+      console.log(JSON.stringify(error));
       reject(error);
     });
   });
@@ -36,7 +42,7 @@ async function callService(httpMethod, service, port, resource, data = null) {
 
 router.get('/:target_id/submissions/:submission_id', function (req, res, next) {
   breaker
-    .fire("get", "participationservice", 3002, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
+    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
     .then((response) => {
       res.send(response.data)
     })
@@ -47,7 +53,7 @@ router.get('/:target_id/submissions/:submission_id', function (req, res, next) {
 
 router.get('/:target_id/submissions', function (req, res, next) {
   breaker
-    .fire("get", "hostingservice", 3001, `/targets/${req.params.target_id}/submissions`)
+    .fire("get", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`)
     .then((response) => {
       res.send(response.data)
     })
@@ -58,7 +64,7 @@ router.get('/:target_id/submissions', function (req, res, next) {
 
 router.get('/', function (req, res, next) {
   breaker
-    .fire("get", "participationservice", 3002, "/targets")
+    .fire('get', process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, "/targets")
     .then((response) => {
       res.send(response.data)
     })
@@ -68,22 +74,52 @@ router.get('/', function (req, res, next) {
 });
 
 // Post routes
-router.post('/:target_id/submissions', function (req, res, next) {
+router.post('/:target_id/submissions', upload.single('image'), function (req, res, next) {
+  const formData = new FormData();
+  formData.append('image', fs.createReadStream(req.file.path));
+  Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
+  formData.append('user._id', req.user._id);
+  formData.append('user.username', req.user.username);
+
   breaker
-    .fire("post", "participationservice", 3002, `/targets/${req.params.target_id}/submissions`, req.body)
+    .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`, formData, formData.getHeaders())
     .then((response) => {
       res.send(response.data)
     })
     .catch((error) => {
       next(error);
+    })
+    .finally(() => {
+      fs.unlink(req.file.path, () => {});
     });
 });
 
-router.post('/', function (req, res, next) {
+router.post('/', upload.single('image'), function (req, res, next) {
+  const formData = new FormData();
+  formData.append('image', fs.createReadStream(req.file.path));
+  Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
+  formData.append('user._id', req.user._id);
+  formData.append('user.username', req.user.username);
+
   breaker
-    .fire("post", "hostingservice", 3001, `/targets`, req.body)
+  .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets`, formData, formData.getHeaders())  // Send the remaining body data to the user service directly.
+  .then((response) => {
+    res.status(200).send(response.data)
+  })
+  .catch((error) => {
+    next(error);
+  })
+  .finally(() => {
+    fs.unlink(req.file.path, () => {});
+  });
+})
+
+// PUT routes
+router.put('/:target_id', function(req, res, next) {
+  breaker
+    .fire("put", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}`, req.body)
     .then((response) => {
-      res.send(response.data)
+      res.send(response.data);
     })
     .catch((error) => {
       next(error);
@@ -93,7 +129,7 @@ router.post('/', function (req, res, next) {
 // Delete routes
 router.delete('/:target_id/submissions/:submission_id', function(req, res, next) {
   breaker
-    .fire("delete", "participationservice", 3002, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
+    .fire("delete", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions/${req.params.submission_id}`)
     .then((response) => {
       res.send(response.data)
     })
@@ -104,7 +140,7 @@ router.delete('/:target_id/submissions/:submission_id', function(req, res, next)
 
 router.delete('/:target_id', function(req, res, next) {
   breaker
-    .fire("delete", "hostingservice", 3001, `/targets/${req.params.target_id}`)
+    .fire("delete", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}`)
     .then((response) => {
       res.send(response.data);
     })
