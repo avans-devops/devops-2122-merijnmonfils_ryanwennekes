@@ -1,0 +1,23 @@
+{
+  "name": "devops-2122-merijnmonfils_ryanwennekes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes/issues"
+  },
+  "homepage": "https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes#readme",
+  "devDependencies": {
+    "mocha": "^9.2.2",
+    "nyc": "^15.1.0"
+  }
+}
