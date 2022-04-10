@@ -90,6 +90,39 @@ services:
     restart: always
     volumes:
       - userdb_volume:/data/user
+  adminservice:
+    build:
+      context: ./adminservice
+      dockerfile: dockerfile
+    environment:
+      PORT: 3004
+      DB_PORT: 27017
+      DB_NAME: admindb
+      DB_USER: username
+      DB_PASSWORD: password
+      AMQP_USER: guest
+      AMQP_PASSWORD: guest
+      AMQP_SERVICE: rabbitmq
+      AMQP_PORT: 5672
+    volumes:
+      - ./adminservice:/adminservice
+    ports:
+      - 3004:3004
+    restart: always
+    depends_on:
+      - admindb
+      - rabbitmq
+  admindb:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=username
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=admindb
+    ports:
+      - 27019:27017
+    restart: always
+    volumes:
+      - admindb_volume:/data/admin
   scoringrpc:
     build:
       context: ./scoringrpc
@@ -112,40 +145,7 @@ services:
 volumes:
     authentication_db_volume:
     userdb_volume:
-    # depends_on:
-    #   - participationservice
-    #   - hostingservice
-    #   - uploadservice
-    #   - rabbitmq
-  # hostingservice:
-  #   build:
-  #     context: ./hostingservice
-  #     dockerfile: dockerfile
-  #     args:
-  #       PORT: 3001
-  #       DB_PORT: 27017
-  #       DB_NAME: hosting
-  #       DB_USER: username
-  #       DB_PASSWORD: password
-  #   volumes:
-  #     - ./hostingservice:/hostingservice
-  #   ports:
-  #     - 3001:3001
-  #   restart: always
-  #   depends_on:
-  #     - hostingdb
-  #     - rabbitmq
-  # participationdb:
-  #   image: mongo:latest
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=username
-  #     - MONGO_INITDB_ROOT_PASSWORD=password
-  #     - MONGO_INITDB_DATABASE=participation
-  #   ports:
-  #     - 27018:27017
-  #   restart: always
-  #   volumes:
-  #     - participationdb_volume:/data/participation
+    admindb_volume:
   # db-exporter:
   #   image: bitnami/mongodb-exporter:latest
   #   command: --mongodb.uri=mongodb://username:password@mongo:27017

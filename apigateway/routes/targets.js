@@ -78,6 +78,8 @@ router.post('/:target_id/submissions', upload.single('image'), function (req, re
   const formData = new FormData();
   formData.append('image', fs.createReadStream(req.file.path));
   Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
+  formData.append('user._id', req.user._id);
+  formData.append('user.username', req.user.username);
 
   breaker
     .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`, formData, formData.getHeaders())
@@ -96,6 +98,8 @@ router.post('/', upload.single('image'), function (req, res, next) {
   const formData = new FormData();
   formData.append('image', fs.createReadStream(req.file.path));
   Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
+  formData.append('user._id', req.user._id);
+  formData.append('user.username', req.user.username);
 
   breaker
   .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets`, formData, formData.getHeaders())  // Send the remaining body data to the user service directly.

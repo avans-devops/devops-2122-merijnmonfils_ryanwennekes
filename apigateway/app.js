@@ -71,6 +71,13 @@ var authenticationRoutes = require('./routes/auth');
 var app = express();
 app.use(passport.initialize())
 
+app.use((req, res, next) => {
+  const payload = ExtractJWT.fromAuthHeaderAsBearerToken();
+
+  req.user = payload.user;
+  next();
+})
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

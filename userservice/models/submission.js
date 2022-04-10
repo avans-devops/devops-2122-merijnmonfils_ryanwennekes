@@ -13,6 +13,16 @@ var submissionSchema = new mongoose.Schema({
   target: {
     type: Schema.Types.ObjectId,
     ref: "Target"
+  },
+  user: {
+    _id: {
+      type: Schema.Types.ObjectId,
+      required: true
+    },
+    username: {
+      type: String,
+      required: true
+    }
   }
 })
 
