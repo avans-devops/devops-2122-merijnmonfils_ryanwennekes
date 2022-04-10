@@ -16,7 +16,9 @@ jobs:
       - name: run ESLint
         run: npx eslint .
   auth_service_code_coverage:
-    working-directory: ./authenticationservice
+    defaults:
+      run:
+        working-directory: ./authenticationservice
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -32,7 +34,9 @@ jobs:
           coverage-command: "nyc --reporter=text mocha ./test/*test.js"
           token: ${{ secrets.GITHUB_TOKEN }}
   user_service_code_coverage:
-    working-directory: ./userservice
+    defaults:
+      run:
+        working-directory: ./userservice
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -48,7 +52,9 @@ jobs:
           coverage-command: "nyc --reporter=text mocha ./test/*test.js"
           token: ${{ secrets.GITHUB_TOKEN }}
   scoring_rpc_server_code_coverage:
-    working-directory: ./scoringrpc
+    defaults:
+      run:
+        working-directory: ./scoringrpc
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
