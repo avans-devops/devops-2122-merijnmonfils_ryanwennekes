@@ -1,6 +1,7 @@
 # DevOps 2021/2022
 
 ## Workflow Status
-![ci](https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes/actions/workflows/CI.yml/badge.svg)
-![main](https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes/actions/workflows/CI.yml/badge.svg?branch=main)
+![auth service](https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes/actions/workflows/authenticationservice/CI.yml/badge.svg)
+![user service](https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes/actions/workflows/userservice/CI.yml/badge.svg)
+![scoring server](https://github.com/avans-devops/devops-2122-merijnmonfils_ryanwennekes/actions/workflows/scoringrpcserver/CI.yml/badge.svg)
 
