@@ -71,6 +71,7 @@ services:
       AMQP_PASSWORD: guest
       AMQP_SERVICE: rabbitmq
       AMQP_PORT: 5672
+      JWT_SIGNATURE_KEY: DITMOETGEINJECTEERDWORDEN
     volumes:
       - ./userservice:/userservice
     ports:

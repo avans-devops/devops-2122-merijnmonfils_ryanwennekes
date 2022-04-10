@@ -2,6 +2,15 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 
+const validateUserRole = {
+  validator: (value) => {
+    return value == "user" || value == "admin";
+  },
+  message: (properties) => {
+    return `"${properties.value}" is not a valid user account type! Specify either "user" or "admin".`
+  }
+}
+
 const UserSchema = new Schema({
   username: {
     type: String,
@@ -15,14 +24,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    validate: {
-      validator: (value) => {
-        return value == "user" || value == "admin";
-      },
-      message: (properties) => {
-        return `"${properties.value}" is not a valid user account type! Specify either "user" or "admin".`
-      }
-    },
+    validate: validateUserRole,
     required: [true, 'The "role" property is required!']
   }
 });
@@ -46,4 +48,7 @@ UserSchema.methods.isValidPassword = async function(password) {
 
 const UserModel = mongoose.model('User', UserSchema);
 
-module.exports = UserModel;
+module.exports = {
+  UserModel: UserModel,
+  UserRoleValidator: validateUserRole
+}

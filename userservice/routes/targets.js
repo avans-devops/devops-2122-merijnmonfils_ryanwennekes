@@ -9,7 +9,8 @@ var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
-const PAGE_SIZE = 5;
+const submissionValidator = require('../business/validate-submission');
+const validateSubmission = require('../business/validate-submission');
 
 router.get('/:target_id/submissions/:submission_id', async function(req, res, next) {
   var submissionID = req.params.submission_id;
@@ -106,9 +107,15 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
       .then(async (response) => {
         var target = await targetModel.findById(req.params.target_id);
         var submission = new submissionModel(req.body);
+        submission.user = req.user;
         submission.image = response.url;
-
-        if (target != null) {
+        
+        await validateSubmission(target, req.user, async (err) => {
+          if (err)
+          {
+            throw err;
+          }
+          
           submission.target = target._id;
           await submission.save();          
 
@@ -123,7 +130,20 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
           });
 
           return res.status(200).send("Your submission has been sent to the queue for score comparison!");
-        }
+        })
+
+        // if (target != null) {
+        //   // Check whether user is not actually the creator of the target.
+        //   console.log(`target ${JSON.stringify(target)}, user ${JSON.stringify(req.user)}`);
+        //   if (target.user._id == req.user._id)
+        //   {
+        //     // Error callback, return 400 and message
+        //     return res.status(400).send("You cannot post submissions under your own target!");
+        //   }
+
+        //   // Success callback
+
+        // }
       })
       .catch((error) => {
         next(error);
@@ -144,6 +164,7 @@ router.post('/', upload.single('image'), async function(req, res, next) {
       })
       .then(async (response) => {
         const target = new targetModel(req.body);
+        target.user = req.user;
         console.log(target.user._id);
         console.log(target.user.username);
         target.image = response.url;
@@ -207,10 +228,10 @@ router.delete('/:target_id/submissions/:submission_id', async function(req, res,
       await target.save();
       await submissionModel.deleteOne({_id: submissionID});
 
-      res.status(200).send(`The submission with ID ${submissionID} was successfully deleted`);
+      return res.status(200).send(`The submission with ID ${submissionID} was successfully deleted`);
     }
 
-    res.status(404).send(`The submission with ID ${submissionID} was not found.`);
+    return res.status(404).send(`The submission with ID ${submissionID} was not found.`);
   } catch (error) {
     next(error);
   }
