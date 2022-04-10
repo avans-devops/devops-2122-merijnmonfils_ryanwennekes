@@ -1,0 +1,3 @@
+{"total": {"lines":{"total":18,"covered":10,"skipped":0,"pct":55.55},"statements":{"total":18,"covered":10,"skipped":0,"pct":55.55},"functions":{"total":4,"covered":1,"skipped":0,"pct":25},"branches":{"total":2,"covered":2,"skipped":0,"pct":100},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
+,"C:\\Users\\Ryan\\source\\repos\\devops-2122-merijnmonfils_ryanwennekes\\authenticationservice\\models\\model.js": {"lines":{"total":18,"covered":10,"skipped":0,"pct":55.55},"functions":{"total":4,"covered":1,"skipped":0,"pct":25},"statements":{"total":18,"covered":10,"skipped":0,"pct":55.55},"branches":{"total":2,"covered":2,"skipped":0,"pct":100}}
+}
