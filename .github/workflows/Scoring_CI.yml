@@ -1,5 +1,8 @@
 name: Scoring RPC server Continuous Integration
 
+on:
+  workflow_call:
+
 defaults:
   run:
     working-directory: ./scoringrpc
