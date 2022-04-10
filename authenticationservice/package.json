@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www -L",
-    "test": "nyc mocha ./test/*.test.js"
+    "test": "mocha ./test/*.test.js",
+    "coverage": "nyc run npm test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

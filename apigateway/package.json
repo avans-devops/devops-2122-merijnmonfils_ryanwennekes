@@ -6,7 +6,8 @@
     "dev": "nodemon -r dotenv/config ./bin/www",
     "lint": "npx eslint .",
     "start": "nodemon ./bin/www -L",
-    "test": "nyc mocha ./test/*.test.js"
+    "test": "mocha ./test/*.test.js",
+    "coverage": "nyc npm run test"
   },
   "dependencies": {
     "amqplib": "^0.8.0",
