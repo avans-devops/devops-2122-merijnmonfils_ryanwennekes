@@ -65,6 +65,7 @@ const metricsMiddleware = promBundle({
 });
 
 var targetsRoute = require('./routes/targets');
+var submissionsRoute = require('./routes/submissions');
 var authenticationRoutes = require('./routes/auth');
 
 var app = express();
@@ -80,6 +81,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(metricsMiddleware);
 
 app.use('/targets', passport.authenticate('admin-rule', { session: false}), targetsRoute);
+app.use('/submissions', passport.authenticate('admin-rule', { session: false}), submissionsRoute);
 app.use('/auth', authenticationRoutes);
 
 // catch 404 and forward to error handler

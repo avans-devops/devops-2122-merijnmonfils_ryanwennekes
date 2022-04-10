@@ -17,13 +17,13 @@ const options = {
 }
 const breaker = new circuitBreaker(callService, options);
 
-async function callService(httpMethod, service, port, resource, data = new FormData()) {
+async function callService(httpMethod, service, port, resource, data = {}, headers = {}) {
   return new Promise((resolve, reject) => {
     axios({
       method: httpMethod,
       url: `http://${service}:${port}${resource}`,
       data: data,
-      headers: data.getHeaders(),
+      headers: headers,
       validateStatus: false
     })
     .then(function(response) {
@@ -80,7 +80,7 @@ router.post('/:target_id/submissions', upload.single('image'), function (req, re
   Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
 
   breaker
-    .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`, formData)
+    .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}/submissions`, formData, formData.getHeaders())
     .then((response) => {
       res.send(response.data)
     })
@@ -98,7 +98,7 @@ router.post('/', upload.single('image'), function (req, res, next) {
   Object.keys(req.body).forEach((key) => formData.append(key, req.body[key]));
 
   breaker
-  .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets`, formData)  // Send the remaining body data to the user service directly.
+  .fire("post", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets`, formData, formData.getHeaders())  // Send the remaining body data to the user service directly.
   .then((response) => {
     res.status(200).send(response.data)
   })
@@ -108,6 +108,18 @@ router.post('/', upload.single('image'), function (req, res, next) {
   .finally(() => {
     fs.unlink(req.file.path, () => {});
   });
+})
+
+// PUT routes
+router.put('/:target_id', function(req, res, next) {
+  breaker
+    .fire("put", process.env.USER_SERVICE_NAME, process.env.USER_SERVICE_PORT, `/targets/${req.params.target_id}`, req.body)
+    .then((response) => {
+      res.send(response.data);
+    })
+    .catch((error) => {
+      next(error);
+    });
 })
 
 // Delete routes

@@ -123,6 +123,36 @@ router.post('/', upload.single('image'), async function(req, res, next) {
   }
 })
 
+// PUT routes
+router.put('/:target_id', async function(req, res, next) {
+  try {
+    var targetID = req.params.target_id;
+    var target = await targetModel.findById(targetID);
+
+    if (target != null)
+    {
+      if (req.body.image != null) {
+        return res.status(400).send("You cannot alter the image of a target after submission!");
+      }
+
+      if (Object.keys(req.body).length == 0) {
+        return res.status(400).send("No changes have been applied!");
+      }
+
+      await targetModel.updateOne({id: targetID}, req.body);
+
+      return res.status(200).send(`Target with ID ${targetID} has been successfully updated!`);
+    }
+
+    const notFoundError = new Error(`Target with ID ${targetID} does not exist!`);
+    notFoundError.status = 404;
+
+    next(notFoundError);
+  } catch (error) {
+    next(error);
+  }
+})
+
 router.delete('/:target_id/submissions/:submission_id', async function(req, res, next) {
   var targetID = req.params.target_id;
   var submissionID = req.params.submission_id;
