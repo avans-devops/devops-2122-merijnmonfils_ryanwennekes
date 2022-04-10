@@ -18,7 +18,7 @@ jobs:
   auth_service_code_coverage:
     defaults:
       run:
-        working-directory: authenticationservice
+        working-directory: ./authenticationservice
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
