@@ -17,10 +17,10 @@ jobs:
         name: Check out repository
       - run: npm install
 
-      - name: Code coverage-reporter
-        uses: tj-actions/coverage-reporter@v5.1
+      - name: NYC Coverage Report
+          uses: Tintef/nyc-reporter-action@0.1.0
         with:
-          coverage-command: "nyc --reporter=text mocha --exclude='fixtures' __tests__/*.js"
+          coverage-command: "nyc --reporter=text mocha ./**/test/*test.js"
           token: ${{ secrets.GITHUB_TOKEN }}
   es_lint:
     runs-on: ubuntu-latest
