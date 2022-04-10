@@ -1,0 +1,42 @@
+name: Scoring RPC server Continuous Integration
+
+defaults:
+  run:
+    working-directory: ./scoringrpc
+
+jobs:
+  es_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Check out repository
+      - name: run ESLint
+        run: npx eslint .
+  scoring_rpc_service_code_coverage:
+    defaults:
+      run:
+        working-directory: ./scoringrpc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1000
+
+      - name: Fetch base
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1000
+
+      - name: Generate NYC report
+        run: |
+          npx nyc report \
+            --reporter json-summary \
+            --report-dir nyc-coverage-report \
+            --exclude-after-remap false
+
+      - name: Report NYC coverage
+        uses: sidx1024/report-nyc-coverage-github-action@v1.2.6
+        with:
+          coverage_file: "scoringrpc/nyc-coverage-report/coverage-summary.json"
+          base_coverage_file: "scoringrpc/nyc-coverage-report/coverage-summary.json"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
