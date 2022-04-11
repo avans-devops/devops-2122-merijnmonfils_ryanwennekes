@@ -1,15 +1,21 @@
 global:
-  scrape_interval: 60s
-  evaluation_interval: 60s
-  scrape_timeout: 60s
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  scrape_timeout: 2s
 
 rule_files:
   - alert.yml
 
 scrape_configs:
-  - job_name: "api"
+  - job_name: "userservice"
     static_configs:
-      - targets: ["api:3000"]
-  - job_name: "mongo"
+      - targets: ["userservice:3002"]
+  - job_name: "authenticationservice"
     static_configs:
-      - targets: [":9216"]
+      - targets: ["authenticationservice:3001"]
+  - job_name: "scoringrpc"
+    static_configs:
+      - targets: ["scoringrpc:3003"]
+  - job_name: "userdb"
+    static_configs:
+      - targets: ["db-exporter:9216"]

@@ -110,31 +110,31 @@ services:
     depends_on:
       - rabbitmq
       - userservice
+  db-exporter:
+    image: bitnami/mongodb-exporter:latest
+    command: --mongodb.uri=mongodb://username:password@userdb:27017
+    depends_on:
+      - userdb
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    ports:
+      - 9090:9090
+    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
+    depends_on:
+      - db-exporter
+      - userservice
+  grafana:
+    build: ./grafana
+    ports:
+      - 3004:3004
+    environment:
+      - GF_SERVER_HTTP_PORT=3004
+    depends_on:
+      - prometheus
 volumes:
     authentication_db_volume:
     userdb_volume:
-  # db-exporter:
-  #   image: bitnami/mongodb-exporter:latest
-  #   command: --mongodb.uri=mongodb://username:password@mongo:27017
-  #   depends_on:
-  #     - mongo
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   volumes:
-  #     - ./prometheus:/etc/prometheus
-  #     - prometheus-data:/prometheus
-  #   ports:
-  #     - 9090:9090
-  #   command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
-  #   depends_on:
-  #     - db-exporter
-  #     - api
-  # grafana:
-  #   build: ./grafana
-  #   ports:
-  #     - 3001:3001
-  #   environment:
-  #     - GF_SERVER_HTTP_PORT=3001
-  #   depends_on:
-  #     - prometheus
-  # prometheus-data:
+    prometheus-data:

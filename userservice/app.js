@@ -57,6 +57,16 @@ passport.use('admin-rule',
 var targetsRouter = require('./routes/targets');
 var submissionsRouter = require('./routes/submissions');
 
+const promBundle = require('express-prom-bundle');
+const metricsMiddleware = promBundle({
+  includePath: true,
+  includeStatusCode: true,
+  normalizePath: true,
+  promClient: {
+    collectDefaultMetrics: {}
+  }
+});
+
 var app = express();
 
 app.use(logger('dev'));
@@ -65,6 +75,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(metricsMiddleware);
 
 app.use((req, res, next) => {
   const payload = ExtractJWT.fromAuthHeaderAsBearerToken();
