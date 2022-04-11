@@ -1,0 +1,9 @@
+FROM node:14
+
+WORKDIR /apigateway
+
+COPY . /apigateway
+
+RUN npm install
+
+CMD ["npm", "run", "start.prod"]

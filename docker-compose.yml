@@ -2,20 +2,14 @@ version: '3.8'
 
 services:
   apigateway:
-    build:
-      context: ./apigateway
-      dockerfile: dockerfile
     environment:
       PORT: 3000
       AUTH_PORT: 3001
       SIGNATURE_KEY: DITMOETGEINJECTEERDWORDEN
       USER_SERVICE_NAME: userservice
       USER_SERVICE_PORT: 3002
-    volumes:
-      - ./apigateway:/apigateway
     ports:
       - 3000:3000
-    restart: always
     depends_on:
       - authenticationservice
       - userservice
@@ -49,10 +43,7 @@ services:
     image: rabbitmq:3.10-rc-management
     hostname: MessageQueue
     volumes:
-      - ./rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
-      - ./rabbitmq/etc/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./rabbitmq/data:/var/lib/rabbitmq/data
-      - ./rabbitmq/logs:/var/log/rabbitmq/log
+      - rabbitmq:/var/lib/rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
@@ -138,3 +129,4 @@ volumes:
     authentication_db_volume:
     userdb_volume:
     prometheus-data:
+    rabbitmq:

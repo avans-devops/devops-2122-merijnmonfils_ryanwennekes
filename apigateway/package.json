@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon -r dotenv/config ./bin/www",
     "lint": "npx eslint .",
-    "start": "nodemon ./bin/www -L",
+    "start.dev": "nodemon ./bin/www -L",
+    "start.prod": "node ./bin/www",
     "test": "mocha ./test/*.test.js",
     "coverage": "nyc npm run test"
   },

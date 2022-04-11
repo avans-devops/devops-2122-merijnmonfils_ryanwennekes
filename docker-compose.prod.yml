@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  apigateway:
+    build:
+      context: ./apigateway
+      dockerfile: dockerfile.prod
+    volumes:
+      - apigateway_volume:/apigateway
+volumes:
+  apigateway_volume:
