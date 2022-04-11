@@ -9,8 +9,8 @@ on:
     
 jobs:
   auth-service:
-    uses: ./.github/workflows/authenticationservice/CI.yml
+    uses: ./.github/workflows/Auth_CI.yml
   user-service:
-    uses: ./.github/workflows/userservice/CI.yml
+    uses: ./.github/workflows/User_CI.yml
   scoring-rpc-server:
-    uses: ./.github/workflows/scoringrpcserver/CI.yml
+    uses: ./.github/workflows/Scoring_CI.yml

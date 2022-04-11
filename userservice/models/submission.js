@@ -13,7 +13,7 @@ var submissionSchema = new mongoose.Schema({
   },
   target: {
     type: Schema.Types.ObjectId,
-    ref: "Target"
+    ref: 'Target'
   },
   user: {
     _id: {
@@ -25,6 +25,6 @@ var submissionSchema = new mongoose.Schema({
       required: true
     }
   }
-})
+});
 
-module.exports = mongoose.model("Submission", submissionSchema);
+module.exports = mongoose.model('Submission', submissionSchema);

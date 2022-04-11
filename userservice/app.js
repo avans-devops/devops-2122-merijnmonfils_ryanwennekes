@@ -57,6 +57,16 @@ passport.use('admin-rule',
 var targetsRouter = require('./routes/targets');
 var submissionsRouter = require('./routes/submissions');
 
+const promBundle = require('express-prom-bundle');
+const metricsMiddleware = promBundle({
+  includePath: true,
+  includeStatusCode: true,
+  normalizePath: true,
+  promClient: {
+    collectDefaultMetrics: {}
+  }
+});
+
 var app = express();
 
 app.use(logger('dev'));
@@ -66,11 +76,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(metricsMiddleware);
+
 app.use((req, res, next) => {
   const payload = ExtractJWT.fromAuthHeaderAsBearerToken();
   req.user = payload.user;
   next();
-})
+});
 
 app.use('/targets', passport.authenticate('user-rule', {session: false}), targetsRouter);
 app.use('/submissions',passport.authenticate('user-rule', {session: false}), submissionsRouter);
@@ -86,7 +98,7 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  if (err.name == "ValidationError")
+  if (err.name == 'ValidationError')
   {
     return res.status(400).send(err.message); // 400 Bad Request: Mongoose voegt zelf geen status toe aan validatie errors.
   }

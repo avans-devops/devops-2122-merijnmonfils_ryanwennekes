@@ -13,14 +13,14 @@ describe('Testing validation logic of submission', () => {
       user: {
         _id: 'user_id'
       }
-    }
+    };
     
     try {
-      await validateSubmission(target, user, (err) => {done()});
+      await validateSubmission(target, user, (err) => {done();});
     } catch (err) {
       expect(err.status).to.equal(404);
       expect(err.message).to.equal('You cannot post submissions under your own target!');
-      done()
+      done();
     }
   });
 
@@ -31,9 +31,9 @@ describe('Testing validation logic of submission', () => {
       user: {
         _id: 'another_user_id'
       }
-    }
+    };
     try {
-      await validateSubmission(target, user, (err) => { done() });
+      await validateSubmission(target, user, (err) => { done(); });
     } catch (err) {
       expect(err.status).to.equal(404);
       expect(err.message).to.equal('The target was not found!');
@@ -53,11 +53,11 @@ describe('Testing validation logic of submission', () => {
       user: {
         _id: 'another_user_id'
       }
-    }
+    };
 
     const result = await validateSubmission(target, user, (err) => {
       expect(err).to.equal(null);
       done();
     });
   });
-})
+});

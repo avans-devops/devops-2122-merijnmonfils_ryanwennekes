@@ -7,6 +7,16 @@ require('./services/mongo'); // Connect met mongo.
 require('./auth/auth'); // Importeert auth settings.
 const passport = require('passport');
 
+const promBundle = require('express-prom-bundle');
+const metricsMiddleware = promBundle({
+  includePath: true,
+  includeStatusCode: true,
+  normalizePath: true,
+  promClient: {
+    collectDefaultMetrics: {}
+  }
+});
+
 const app = express();
 
 app.use(passport.initialize());
@@ -16,6 +26,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(metricsMiddleware);
 
 const authenticationRouter = require('./routes/routes');
 

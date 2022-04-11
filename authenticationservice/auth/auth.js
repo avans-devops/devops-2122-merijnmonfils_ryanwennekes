@@ -1,34 +1,17 @@
 const passport = require('passport');
 const localStrategy = require('passport-local').Strategy;
 const UserModel = require('../models/model').UserModel;
-const JWTstrategy = require('passport-jwt').Strategy;
-const ExtractJWT = require('passport-jwt').ExtractJwt;
-const ValidationError = require('mongoose').Error.ValidationError
+require('passport-jwt').Strategy;
+require('passport-jwt').ExtractJwt;
+const ValidationError = require('mongoose').Error.ValidationError;
 require('../services/mongo');
-
-// // Onderstaande method in API gateway
-// passport.use(
-//   new JWTstrategy(
-//     {
-//       secretOrKey: 'TOP_SECRET',
-//       jwtFromRequest: ExtractJWT.fromUrlQueryParameter('secret_token')
-//     },
-//     async (token, done) => {
-//       try {
-//         return done(null, token.user);
-//       } catch (error) {
-//         done(error);
-//       }
-//     }
-//   )
-// );
 
 passport.use(
   'signup',
   new localStrategy(
     {
-      usernameField: "username",
-      passwordField: "password",
+      usernameField: 'username',
+      passwordField: 'password',
       passReqToCallback: true
     },
     async (req, username, password, done) => {

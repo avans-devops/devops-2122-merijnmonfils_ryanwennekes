@@ -4,12 +4,12 @@ const Schema = mongoose.Schema;
 
 const validateUserRole = {
   validator: (value) => {
-    return value == "user" || value == "admin";
+    return value == 'user' || value == 'admin';
   },
   message: (properties) => {
-    return `"${properties.value}" is not a valid user account type! Specify either "user" or "admin".`
+    return `"${properties.value}" is not a valid user account type! Specify either "user" or "admin".`;
   }
-}
+};
 
 const UserSchema = new Schema({
   username: {
@@ -32,7 +32,6 @@ const UserSchema = new Schema({
 UserSchema.pre(
   'save',
   async function(next) {
-    const user = this;
     const hash = await bcrypt.hash(this.password, 10);
     this.password = hash;
     next();
@@ -44,11 +43,11 @@ UserSchema.methods.isValidPassword = async function(password) {
   const compare = await bcrypt.compare(password, user.password);
 
   return compare;
-}
+};
 
 const UserModel = mongoose.model('User', UserSchema);
 
 module.exports = {
   UserModel: UserModel,
   UserRoleValidator: validateUserRole
-}
+};

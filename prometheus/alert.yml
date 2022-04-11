@@ -2,6 +2,6 @@ groups:
   - name: Alerts
     rules:
       - alert: "On API down"
-        expr: up{job="api"} < 1
+        expr: up{job="userservice"} < 1
         for: 30s
       

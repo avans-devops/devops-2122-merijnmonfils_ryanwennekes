@@ -1,11 +1,11 @@
 require('../services/mongo');
 const amqp = require('amqplib/callback_api');
 const messageBrokerURI = `amqp://${process.env.AMQP_USER}:${process.env.AMQP_PASSWORD}@${process.env.AMQP_SERVICE}:${process.env.AMQP_PORT}`;
-const exchange = "scoring_exchange";
-const pendingScoringQueue = "pending_scoring_queue";
-const completedScoringQueue = "completed_scoring_queue";
-const completedBinding = "completed";
-const correlationID = "sent_from_user_service";
+const exchange = 'scoring_exchange';
+const pendingScoringQueue = 'pending_scoring_queue';
+const completedScoringQueue = 'completed_scoring_queue';
+const completedBinding = 'completed';
+const correlationID = 'sent_from_user_service';
 const submission = require('../models/submission');
 
 ch = null;
@@ -36,7 +36,7 @@ amqp.connect(messageBrokerURI, function(error, connection) {
       if (error) {
         throw error;
       }
-    })
+    });
 
     channel.assertQueue(completedScoringQueue, {
       exclusive: false
@@ -54,9 +54,9 @@ amqp.connect(messageBrokerURI, function(error, connection) {
       }, {
         noAck: true
       });
-    })
-  })
-})
+    });
+  });
+});
 
 async function RPCResponse(message) {
   console.log(message);
@@ -75,4 +75,4 @@ module.exports.RPCRequest = async (message) => {
       replyTo: completedScoringQueue
     }
   );
-}
+};
