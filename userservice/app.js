@@ -82,7 +82,7 @@ app.use((req, res, next) => {
   const payload = ExtractJWT.fromAuthHeaderAsBearerToken();
   req.user = payload.user;
   next();
-})
+});
 
 app.use('/targets', passport.authenticate('user-rule', {session: false}), targetsRouter);
 app.use('/submissions',passport.authenticate('user-rule', {session: false}), submissionsRouter);
@@ -98,7 +98,7 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  if (err.name == "ValidationError")
+  if (err.name == 'ValidationError')
   {
     return res.status(400).send(err.message); // 400 Bad Request: Mongoose voegt zelf geen status toe aan validatie errors.
   }

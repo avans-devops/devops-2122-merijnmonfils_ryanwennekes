@@ -25,7 +25,7 @@ var targetSchema = new mongoose.Schema({
   thumbsDown: {type: Number, default: 0},
   submissions: [{
     type: Schema.Types.ObjectId,
-    ref: "Submission"
+    ref: 'Submission'
   }],
   user: {
     _id: {
@@ -37,6 +37,6 @@ var targetSchema = new mongoose.Schema({
       required: true
     }
   }
-})
+});
 
-module.exports = mongoose.model("Target", targetSchema);
+module.exports = mongoose.model('Target', targetSchema);

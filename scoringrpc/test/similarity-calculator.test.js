@@ -15,4 +15,4 @@ describe('Testing image similarity calculator', () => {
     expect(result).to.equal(0);
     done();
   });
-})
+});

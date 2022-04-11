@@ -16,5 +16,5 @@ module.exports = async (target, user, callback) => {
   notFound.status = 400;
   notFound.message = 'The target was not found!';
 
-  return callback(notFound)
-}
+  return callback(notFound);
+};

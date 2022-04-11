@@ -9,7 +9,6 @@ var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
-const submissionValidator = require('../business/validate-submission');
 const validateSubmission = require('../business/validate-submission');
 
 router.get('/:target_id/submissions/:submission_id', async function(req, res, next) {
@@ -37,12 +36,12 @@ router.get('/:target_id/submissions', async function(req, res, next) {
 
   try {
     var result = await targetModel
-                        .findById(targetID)
-                        .populate('submissions')
-                        .select('submissions -_id')
-                        .sort(sort)
-                        .skip((page - 1) * limit)
-                        .limit(limit);
+      .findById(targetID)
+      .populate('submissions')
+      .select('submissions -_id')
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
     
     if (result != null)
     {
@@ -51,7 +50,7 @@ router.get('/:target_id/submissions', async function(req, res, next) {
           message: `Showing a total of ${result.submissions.length} items. Current page is ${page}. Current document limit is ${limit}`,
           submissions: result.submissions
         }
-      )
+      );
     } else {
       const notFoundError = new Error(`Target with ID ${targetID} does not exist.`);
       notFoundError.status = 404;
@@ -81,11 +80,11 @@ router.get('/', async function(req, res, next) {
 
   try {
     var results = await targetModel
-                        .find({})
-                        .populate('submissions')
-                        .sort(sort)
-                        .skip((page - 1) * limit)
-                        .limit(limit);
+      .find({})
+      .populate('submissions')
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     return res.status(200).send(
       {
@@ -129,21 +128,8 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
             targetImage: target.image
           });
 
-          return res.status(200).send("Your submission has been sent to the queue for score comparison!");
-        })
-
-        // if (target != null) {
-        //   // Check whether user is not actually the creator of the target.
-        //   console.log(`target ${JSON.stringify(target)}, user ${JSON.stringify(req.user)}`);
-        //   if (target.user._id == req.user._id)
-        //   {
-        //     // Error callback, return 400 and message
-        //     return res.status(400).send("You cannot post submissions under your own target!");
-        //   }
-
-        //   // Success callback
-
-        // }
+          return res.status(200).send('Your submission has been sent to the queue for score comparison!');
+        });
       })
       .catch((error) => {
         next(error);
@@ -151,9 +137,9 @@ router.post('/:target_id/submissions', upload.single('image'), async function(re
       .finally(() => {
         fs.unlink(req.file.path, () => {});
       });
-    } catch(error) {
-      next(error);
-    }
+  } catch(error) {
+    next(error);
+  }
 });
 
 router.post('/', upload.single('image'), async function(req, res, next) {
@@ -183,7 +169,7 @@ router.post('/', upload.single('image'), async function(req, res, next) {
     fs.unlink(req.file.path, () => {});
     next(error);
   }
-})
+});
 
 // PUT routes
 router.put('/:target_id', async function(req, res, next) {
@@ -194,11 +180,11 @@ router.put('/:target_id', async function(req, res, next) {
     if (target != null)
     {
       if (req.body.image != null) {
-        return res.status(400).send("You cannot alter the image of a target after submission!");
+        return res.status(400).send('You cannot alter the image of a target after submission!');
       }
 
       if (Object.keys(req.body).length == 0) {
-        return res.status(400).send("No changes have been applied!");
+        return res.status(400).send('No changes have been applied!');
       }
 
       await targetModel.updateOne({_id: targetID}, req.body, { runValidators: true});
@@ -213,7 +199,7 @@ router.put('/:target_id', async function(req, res, next) {
   } catch (error) {
     next(error);
   }
-})
+});
 
 router.delete('/:target_id/submissions/:submission_id', async function(req, res, next) {
   var targetID = req.params.target_id;

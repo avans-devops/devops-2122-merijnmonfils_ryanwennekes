@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 require('../services/mongo');
-var rabbitmq = require('../services/rabbitmq');
+require('../services/rabbitmq');
 var targetModel = require('../models/target');
 var submissionModel = require('../models/submission');
 
@@ -26,10 +26,10 @@ router.get('/', async (req, res, next) => {
 
   try {
     const results = await submissionModel
-                            .find({})
-                            .sort(sort)
-                            .skip((page - 1) * limit)
-                            .limit(limit);
+      .find({})
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     return res.status(200).send({
       message: `Showing a total of ${results.length} items. Current page is ${page}. Current document limit is ${limit}`,
@@ -48,15 +48,15 @@ router.put('/:submission_id', async (req, res, next) => {
     if (submission != null)
     {
       if (req.body.image != null) {
-        return res.status(400).send("You cannot alter the image of a submission after it has been sent out!");
+        return res.status(400).send('You cannot alter the image of a submission after it has been sent out!');
       }
 
       if (req.body.score != null) {
-        return res.status(400).send("You cannot alter the score of your submission!");
+        return res.status(400).send('You cannot alter the score of your submission!');
       }
 
       if (Object.keys(req.body).length == 0) {
-        return res.status(400).send("No changes have been applied!");
+        return res.status(400).send('No changes have been applied!');
       }
 
       await submissionModel.updateOne({id: submissionID}, req.body, { runValidators: true});
@@ -72,16 +72,16 @@ router.put('/:submission_id', async (req, res, next) => {
 
 router.delete('/:submission_id', async (req, res, next) => {
   try {
-    const submission = await submissionModel.findOne({_id: req.params.submission_id})
+    const submission = await submissionModel.findOne({_id: req.params.submission_id});
 
     if (submission) {
       const target = await targetModel.findOne({_id : submission.target});
       target.submissions.pull(submission);
-      await target.save()
+      await target.save();
 
       await submissionModel.deleteOne({_id: req.params.submission_id});
 
-      return res.status(200).send(`Submission with ID ${req.params.submission_id} has been successfully deleted!`)
+      return res.status(200).send(`Submission with ID ${req.params.submission_id} has been successfully deleted!`);
     }
 
     return res.status(404).send(`Submission with ID ${req.params.submission_id} does not exist!`);
